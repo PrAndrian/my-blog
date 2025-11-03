@@ -1,6 +1,5 @@
 "use client";
 
-import { useTheme } from "@/app/providers/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -15,6 +14,7 @@ import {
   ShoppingBag,
   Sparkles,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
@@ -50,8 +50,8 @@ export function BlogNavigationSidebar({
   return (
     <div
       className={cn(
-        "flex flex-col border-r bg-background m-2 mr-0 rounded-l-lg",
-        selectedCategory === "Home" ? "rounded-r-lg" : "rounded-r-none"
+        "flex flex-col border-r bg-background m-2 mr-0 border-l border-y rounded-l-xl",
+        selectedCategory === "Home" ? "rounded-r-xl" : "rounded-r-none"
       )}
     >
       {/* Header with Signature Image */}
@@ -92,7 +92,7 @@ export function BlogNavigationSidebar({
             Home
           </Button>
 
-          <Separator className="my-2" />
+          <Separator />
 
           {/* Articles section */}
           <div className="px-2 py-2">

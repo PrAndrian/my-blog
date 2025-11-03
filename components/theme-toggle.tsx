@@ -1,18 +1,35 @@
 "use client";
 
-import { useTheme } from "@/app/contexts/ThemeContext";
+import { useTheme } from "next-themes";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-type Theme = "light" | "dark" | "system";
+import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleValueChange = (value: string) => {
-    if (value === "light" || value === "dark" || value === "system") {
-      setTheme(value as Theme);
-    }
+    setTheme(value);
   };
+
+  // Show skeleton during SSR to prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="w-full">
+        <div className="inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 w-full">
+          <div className="grid w-full grid-cols-3 gap-1">
+            <div className="h-7 rounded-md bg-muted-foreground/20" />
+            <div className="h-7 rounded-md bg-muted-foreground/20" />
+            <div className="h-7 rounded-md bg-muted-foreground/20" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Tabs value={theme} onValueChange={handleValueChange} className="w-full">
