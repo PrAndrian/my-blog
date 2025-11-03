@@ -1,8 +1,8 @@
 "use client";
 
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Doc, Id } from "@/convex/_generated/dataModel";
 
@@ -13,7 +13,12 @@ interface PostListProps {
   category: string;
 }
 
-export function PostList({ posts, selectedPostId, onSelectPost, category }: PostListProps) {
+export function PostList({
+  posts,
+  selectedPostId,
+  onSelectPost,
+  category,
+}: PostListProps) {
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
     return date.toLocaleDateString("en-US", {
@@ -24,7 +29,7 @@ export function PostList({ posts, selectedPostId, onSelectPost, category }: Post
   };
 
   return (
-    <div className="flex h-full flex-col border-r bg-background">
+    <div className="flex flex-col border-r bg-background  my-2 mr-2 rounded-r-lg">
       {/* Header */}
       <div className="p-4">
         <h2 className="text-xl font-semibold">{category} Posts</h2>
@@ -40,7 +45,9 @@ export function PostList({ posts, selectedPostId, onSelectPost, category }: Post
         <div className="space-y-2 p-4">
           {posts.length === 0 ? (
             <div className="flex h-32 items-center justify-center text-center">
-              <p className="text-sm text-muted-foreground">No posts in this category yet.</p>
+              <p className="text-sm text-muted-foreground">
+                No posts in this category yet.
+              </p>
             </div>
           ) : (
             posts.map((post) => (
@@ -51,7 +58,9 @@ export function PostList({ posts, selectedPostId, onSelectPost, category }: Post
                 }`}
                 onClick={() => onSelectPost(post._id)}
               >
-                <h3 className="mb-2 line-clamp-2 font-semibold leading-tight">{post.title}</h3>
+                <h3 className="mb-2 line-clamp-2 font-semibold leading-tight">
+                  {post.title}
+                </h3>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span>{formatDate(post.date)}</span>
                   <span>•</span>

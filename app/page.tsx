@@ -1,35 +1,39 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { BlogNavigationSidebar } from "@/components/blog/BlogNavigationSidebar";
+import { PostContent } from "@/components/blog/PostContent";
+import { PostList } from "@/components/blog/PostList";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { BlogNavigationSidebar } from "@/components/blog/BlogNavigationSidebar";
-import { PostList } from "@/components/blog/PostList";
-import { PostContent } from "@/components/blog/PostContent";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Menu, ArrowLeft, Database } from "lucide-react";
+import { useMutation, useQuery } from "convex/react";
+import { ArrowLeft, Database, Menu } from "lucide-react";
+import { useState } from "react";
 
 type MobilePanel = "navigation" | "postList" | "postContent";
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string>("Home");
-  const [selectedPostId, setSelectedPostId] = useState<Id<"posts"> | null>(null);
+  const [selectedPostId, setSelectedPostId] = useState<Id<"posts"> | null>(
+    null
+  );
   const [mobilePanel, setMobilePanel] = useState<MobilePanel>("navigation");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Fetch categories and posts
   const categories = useQuery(api.posts.getCategories) ?? [];
   const seedPosts = useMutation(api.seed.seedPosts);
-  const allPosts = useQuery(
-    api.posts.getPostsByCategory,
-    selectedCategory !== "Home" ? { category: selectedCategory } : "skip"
-  ) ?? [];
+  const allPosts =
+    useQuery(
+      api.posts.getPostsByCategory,
+      selectedCategory !== "Home" ? { category: selectedCategory } : "skip"
+    ) ?? [];
   const posts = selectedCategory !== "Home" ? allPosts : [];
 
   // Get selected post
-  const selectedPost = posts.find((post) => post._id === selectedPostId) ?? null;
+  const selectedPost =
+    posts.find((post) => post._id === selectedPostId) ?? null;
 
   // Handle category selection
   const handleSelectCategory = (category: string) => {
@@ -99,11 +103,13 @@ export default function Home() {
       </div>
 
       {/* Desktop Layout - Dynamic Columns */}
-      <div className={`hidden h-full lg:grid ${
-        selectedCategory === "Home"
-          ? "lg:grid-cols-[280px_1fr]"
-          : "lg:grid-cols-[280px_400px_1fr]"
-      }`}>
+      <div
+        className={`hidden h-full lg:grid ${
+          selectedCategory === "Home"
+            ? "lg:grid-cols-[320px_1fr]"
+            : "lg:grid-cols-[320px_320px_1fr]"
+        }`}
+      >
         {/* Left Panel - Navigation */}
         <BlogNavigationSidebar
           selectedCategory={selectedCategory}
@@ -131,7 +137,8 @@ export default function Home() {
               {categories.length === 0 ? (
                 <div className="space-y-4">
                   <p className="text-lg text-muted-foreground">
-                    No blog posts found. Click the button below to seed the database with sample posts.
+                    No blog posts found. Click the button below to seed the
+                    database with sample posts.
                   </p>
                   <Button onClick={handleSeedDatabase} size="lg">
                     <Database className="mr-2 h-5 w-5" />
@@ -174,7 +181,8 @@ export default function Home() {
               {categories.length === 0 ? (
                 <div className="space-y-4">
                   <p className="text-muted-foreground">
-                    No blog posts found. Click the button below to seed the database with sample posts.
+                    No blog posts found. Click the button below to seed the
+                    database with sample posts.
                   </p>
                   <Button onClick={handleSeedDatabase} size="lg">
                     <Database className="mr-2 h-5 w-5" />
