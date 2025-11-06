@@ -31,6 +31,25 @@ export default defineSchema(
       .index("by_category", ["category"])
       .index("by_slug", ["slug"])
       .index("by_date", ["date"]),
+    // AI Tech Digests table
+    digests: defineTable({
+      title: v.string(),
+      summary: v.string(), // Short summary of the digest
+      content: v.string(), // Full markdown content
+      date: v.number(), // Timestamp
+      tags: v.array(v.string()),
+      articles: v.array(
+        v.object({
+          title: v.string(),
+          source: v.string(),
+          url: v.string(),
+          summary: v.string(),
+        })
+      ),
+      slug: v.string(),
+    })
+      .index("by_date", ["date"])
+      .index("by_slug", ["slug"]),
   },
   // If you ever get an error about schema mismatch
   // between your data and your schema, and you cannot

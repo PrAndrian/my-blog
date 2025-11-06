@@ -876,3 +876,406 @@ Start with these 11 tips and discover how powerful Keep can be.`,
     return `Successfully seeded ${mockPosts.length} blog posts!`;
   },
 });
+
+/**
+ * Seed the database with sample AI tech digests
+ */
+export const seedDigests = mutation({
+  args: {},
+  returns: v.string(),
+  handler: async (ctx) => {
+    const mockDigests = [
+      {
+        title: "AI & Machine Learning Weekly - January 2025",
+        summary:
+          "This week's digest covers groundbreaking developments in AI models, new frameworks for LLM development, and emerging trends in machine learning deployment.",
+        content: `# AI & Machine Learning Weekly - January 2025
+
+Welcome to this week's digest of the most important developments in AI and machine learning for software developers.
+
+## Key Themes This Week
+
+This week saw major announcements in:
+- **Large Language Models**: New efficiency improvements
+- **Developer Tools**: Better frameworks for AI integration
+- **Production Deployment**: New patterns for scaling AI applications
+- **Open Source**: Community-driven AI projects gaining traction
+
+## Analysis
+
+The AI landscape is shifting from pure research to production-ready applications. Developers are increasingly focused on:
+
+1. **Cost optimization** for LLM deployments
+2. **Latency reduction** in real-time applications
+3. **Fine-tuning** for domain-specific use cases
+4. **Evaluation frameworks** for AI outputs
+
+## Code Example: Efficient LLM Caching
+
+\`\`\`typescript
+import { LRUCache } from 'lru-cache';
+
+interface CachedResponse {
+  prompt: string;
+  response: string;
+  timestamp: number;
+}
+
+const promptCache = new LRUCache<string, CachedResponse>({
+  max: 1000,
+  ttl: 1000 * 60 * 60, // 1 hour
+});
+
+async function getCachedLLMResponse(prompt: string): Promise<string> {
+  const cacheKey = hashPrompt(prompt);
+  const cached = promptCache.get(cacheKey);
+
+  if (cached && Date.now() - cached.timestamp < 3600000) {
+    return cached.response;
+  }
+
+  const response = await callLLM(prompt);
+  promptCache.set(cacheKey, {
+    prompt,
+    response,
+    timestamp: Date.now(),
+  });
+
+  return response;
+}
+\`\`\`
+
+## What to Watch
+
+- **Multi-modal models** becoming more accessible
+- **Edge AI** deployment patterns
+- **RAG (Retrieval-Augmented Generation)** optimizations
+- **AI agent frameworks** maturing rapidly
+
+Stay tuned for next week's digest!`,
+        date: Date.parse("3 Jan 2025"),
+        tags: ["AI", "Machine Learning", "LLM", "Developer Tools"],
+        slug: "ai-ml-weekly-jan-2025",
+        articles: [
+          {
+            title: "GPT-4.5 Announced: 40% Faster with 50% Lower Costs",
+            source: "OpenAI Blog",
+            url: "https://openai.com/blog/gpt-4-5",
+            summary:
+              "OpenAI announces GPT-4.5 with significant performance improvements and cost reductions. The new model includes better reasoning capabilities and reduced latency, making it more suitable for production applications.",
+          },
+          {
+            title: "LangChain 0.3: Simplified AI Application Development",
+            source: "LangChain Documentation",
+            url: "https://python.langchain.com/docs/",
+            summary:
+              "LangChain releases version 0.3 with streamlined APIs, better memory management, and improved streaming support. The update includes new abstractions for RAG applications and agent development.",
+          },
+          {
+            title: "Mistral AI Releases Mixtral 8x22B: Open Source Powerhouse",
+            source: "Mistral AI",
+            url: "https://mistral.ai/news/mixtral-8x22b",
+            summary:
+              "Mistral's latest open-source model matches GPT-4 performance on many benchmarks while being fully self-hostable. The mixture-of-experts architecture allows for efficient scaling.",
+          },
+          {
+            title: "Production Patterns for LLM Applications",
+            source: "A16Z Blog",
+            url: "https://a16z.com/llm-production-patterns",
+            summary:
+              "Comprehensive guide to deploying LLM applications at scale, covering caching strategies, fallback mechanisms, cost optimization, and monitoring best practices.",
+          },
+        ],
+      },
+      {
+        title: "Web Development Digest - December 2024",
+        summary:
+          "Major updates to React, Next.js, and the web platform. New tools for performance optimization and developer experience improvements.",
+        content: `# Web Development Digest - December 2024
+
+A comprehensive overview of the latest developments in web development, focusing on frameworks, tools, and best practices.
+
+## Major Framework Updates
+
+### React 19 Release Candidate
+
+React 19 brings significant improvements:
+- **Server Components** are now stable
+- **Actions** for form handling
+- **Improved hydration** performance
+- **Better error boundaries**
+
+### Next.js 15
+
+Building on React 19, Next.js 15 includes:
+- Partial prerendering (PPR)
+- Improved caching strategies
+- Better TypeScript support
+- Enhanced developer experience
+
+## Performance Optimization
+
+\`\`\`typescript
+// Example: Using React Server Components for data fetching
+async function ProductList() {
+  // This runs on the server
+  const products = await db.product.findMany({
+    where: { published: true },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return (
+    <div className="grid gap-4">
+      {products.map((product) => (
+        <ProductCard key={product.id} product={product} />
+      ))}
+    </div>
+  );
+}
+\`\`\`
+
+## Tooling Improvements
+
+- **Turbopack** reaching beta stability
+- **Biome** as a faster alternative to ESLint + Prettier
+- **Vite 5** with improved build performance
+- **TypeScript 5.3** with better type inference
+
+## CSS Advances
+
+- Container queries gaining widespread support
+- Cascade layers for better style organization
+- Native CSS nesting
+- View transitions API
+
+## What's Next
+
+The web platform continues to evolve rapidly. Key areas to watch:
+
+1. **Server-first frameworks** becoming mainstream
+2. **Edge computing** for better global performance
+3. **View transitions** for smooth navigation
+4. **Streaming SSR** patterns
+
+## Best Practices
+
+\`\`\`tsx
+// Modern Next.js app structure
+import { Suspense } from 'react';
+import { ProductList } from './ProductList';
+import { ProductListSkeleton } from './ProductListSkeleton';
+
+export default function ProductsPage() {
+  return (
+    <div>
+      <h1>Products</h1>
+      <Suspense fallback={<ProductListSkeleton />}>
+        <ProductList />
+      </Suspense>
+    </div>
+  );
+}
+\`\`\`
+
+The future of web development is server-centric, type-safe, and performance-focused.`,
+        date: Date.parse("15 Dec 2024"),
+        tags: ["Web Development", "React", "Next.js", "JavaScript"],
+        slug: "web-dev-digest-dec-2024",
+        articles: [
+          {
+            title: "React 19 RC: What You Need to Know",
+            source: "React.dev",
+            url: "https://react.dev/blog/2024/12/05/react-19",
+            summary:
+              "React 19 Release Candidate is here with Server Components, Actions, and improved hydration. Learn about the new features and how to upgrade your applications.",
+          },
+          {
+            title: "Next.js 15 Released",
+            source: "Vercel Blog",
+            url: "https://vercel.com/blog/next-15",
+            summary:
+              "Next.js 15 builds on React 19 with partial prerendering, improved caching, and better developer experience. Explore the new features and migration guide.",
+          },
+          {
+            title: "The State of JS 2024 Results",
+            source: "State of JS",
+            url: "https://stateofjs.com/en-US",
+            summary:
+              "Annual survey results showing trends in JavaScript frameworks, tools, and libraries. React and TypeScript continue to dominate, while new tools like Biome gain traction.",
+          },
+          {
+            title: "Web Performance in 2024: A Comprehensive Guide",
+            source: "web.dev",
+            url: "https://web.dev/performance",
+            summary:
+              "Google's updated guide to web performance covering Core Web Vitals, modern optimization techniques, and best practices for fast, reliable web applications.",
+          },
+        ],
+      },
+      {
+        title: "DevOps & Cloud Infrastructure - November 2024",
+        summary:
+          "Kubernetes updates, serverless evolution, and new patterns for infrastructure as code. Platform engineering becoming mainstream.",
+        content: `# DevOps & Cloud Infrastructure - November 2024
+
+This month's digest covers the latest in cloud infrastructure, DevOps practices, and platform engineering.
+
+## Kubernetes Evolution
+
+Kubernetes 1.29 brings:
+- **Sidecar containers** now GA
+- **Job completion improvements**
+- **Better resource management**
+- **Enhanced security features**
+
+## Serverless Trends
+
+The serverless landscape is maturing:
+- **Edge functions** becoming more powerful
+- **Cold start** optimizations across platforms
+- **Better local development** experiences
+- **Multi-cloud portability** improving
+
+## Infrastructure as Code
+
+\`\`\`typescript
+// Modern IaC with Pulumi
+import * as pulumi from '@pulumi/pulumi';
+import * as aws from '@pulumi/aws';
+
+// Create an S3 bucket with proper configuration
+const bucket = new aws.s3.Bucket('my-app-bucket', {
+  website: {
+    indexDocument: 'index.html',
+  },
+  versioning: {
+    enabled: true,
+  },
+  serverSideEncryptionConfiguration: {
+    rule: {
+      applyServerSideEncryptionByDefault: {
+        sseAlgorithm: 'AES256',
+      },
+    },
+  },
+});
+
+// CloudFront distribution for global CDN
+const cdn = new aws.cloudfront.Distribution('my-cdn', {
+  origins: [{
+    domainName: bucket.bucketRegionalDomainName,
+    originId: 'S3Origin',
+  }],
+  enabled: true,
+  defaultCacheBehavior: {
+    allowedMethods: ['GET', 'HEAD'],
+    cachedMethods: ['GET', 'HEAD'],
+    targetOriginId: 'S3Origin',
+    viewerProtocolPolicy: 'redirect-to-https',
+  },
+});
+
+export const bucketName = bucket.id;
+export const cdnUrl = cdn.domainName;
+\`\`\`
+
+## Platform Engineering
+
+Organizations are building internal developer platforms:
+- **Self-service infrastructure**
+- **Golden paths** for common tasks
+- **Developer portals**
+- **Automated workflows**
+
+## Observability
+
+Modern observability stack:
+- **OpenTelemetry** becoming standard
+- **Distributed tracing** adoption
+- **Log aggregation** at scale
+- **Real-time metrics**
+
+## GitOps Patterns
+
+\`\`\`yaml
+# Example: ArgoCD Application
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: my-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/org/repo
+    targetRevision: main
+    path: k8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: production
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+\`\`\`
+
+## Security Focus
+
+- **Supply chain security** with SBOM
+- **Zero-trust networking**
+- **Secret management** best practices
+- **Compliance automation**
+
+## Future Outlook
+
+Key trends to watch:
+1. **WebAssembly** in cloud infrastructure
+2. **eBPF** for observability and security
+3. **Platform engineering** maturity
+4. **AI-assisted operations**
+
+The infrastructure landscape continues to prioritize developer experience while maintaining security and reliability.`,
+        date: Date.parse("20 Nov 2024"),
+        tags: ["DevOps", "Cloud", "Kubernetes", "Infrastructure"],
+        slug: "devops-cloud-nov-2024",
+        articles: [
+          {
+            title: "Kubernetes 1.29: What's New",
+            source: "Kubernetes Blog",
+            url: "https://kubernetes.io/blog/2024/11/13/kubernetes-v1-29-release",
+            summary:
+              "Kubernetes 1.29 release brings sidecar containers to GA, improved job handling, and enhanced security features. Learn about the new capabilities and upgrade considerations.",
+          },
+          {
+            title: "Platform Engineering: The New Standard",
+            source: "InfoQ",
+            url: "https://www.infoq.com/articles/platform-engineering",
+            summary:
+              "Deep dive into platform engineering principles, how organizations are building internal developer platforms, and the tools that enable self-service infrastructure.",
+          },
+          {
+            title: "Terraform vs Pulumi: A 2024 Comparison",
+            source: "The New Stack",
+            url: "https://thenewstack.io/terraform-vs-pulumi-2024",
+            summary:
+              "Comprehensive comparison of leading IaC tools, covering type safety, multi-cloud support, and developer experience. Includes migration strategies and best practices.",
+          },
+          {
+            title: "OpenTelemetry: Production Best Practices",
+            source: "CNCF Blog",
+            url: "https://www.cncf.io/blog/opentelemetry-best-practices",
+            summary:
+              "Guide to implementing OpenTelemetry at scale, covering instrumentation strategies, sampling, and integration with observability platforms.",
+          },
+        ],
+      },
+    ];
+
+    // Insert all digests
+    for (const digest of mockDigests) {
+      await ctx.db.insert("digests", digest);
+    }
+
+    return `Successfully seeded ${mockDigests.length} AI tech digests!`;
+  },
+});

@@ -4,12 +4,13 @@ import { Inter } from "next/font/google";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "next-themes";
+import { MainNav } from "@/components/navigation/MainNav";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "My App Title",
-  description: "My app description",
+  title: "My Blog - AI Tech Digest",
+  description: "A blog featuring productivity tips and AI-curated tech digests",
 };
 
 export default function RootLayout({
@@ -28,7 +29,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ClerkProvider>
-            <ConvexClientProvider>{children}</ConvexClientProvider>
+            <ConvexClientProvider>
+              <MainNav />
+              {children}
+            </ConvexClientProvider>
           </ClerkProvider>
         </ThemeProvider>
       </body>
