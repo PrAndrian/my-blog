@@ -39,7 +39,7 @@ export function getDefaultMetadata(): Metadata {
 }
 
 export function getBlogPostMetadata(post: BlogPost): Metadata {
-  const url = `${siteUrl}/blog/${post.slug}`;
+  const url = `${siteUrl}/${post.slug}`;
   const description = post.content
     .replace(/[#*`]/g, "")
     .substring(0, 160)
@@ -91,7 +91,7 @@ export function getBlogPostStructuredData(post: BlogPost) {
       : new Date(post.date).toISOString(),
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `${siteUrl}/blog/${post.slug}`,
+      "@id": `${siteUrl}/${post.slug}`,
     },
     image: post.featuredImageUrl
       ? post.featuredImageUrl.startsWith("http")

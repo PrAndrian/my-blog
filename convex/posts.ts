@@ -2,14 +2,24 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 /**
- * Get all unique categories from posts
+ * Get all unique categories from published posts
+ * Note: This loads all posts to extract categories. For better performance with many posts,
+ * consider creating a separate categories table or caching this result.
  */
 export const getCategories = query({
   args: {},
   returns: v.array(v.string()),
   handler: async (ctx) => {
-    const posts = await ctx.db.query("posts").collect();
-    const categories = Array.from(new Set(posts.map((post) => post.category)));
+    const posts = await ctx.db
+      .query("posts")
+      .withIndex("by_date")
+      .collect();
+    const publishedPosts = posts.filter(
+      (post) => !post.status || post.status === "published"
+    );
+    const categories = Array.from(
+      new Set(publishedPosts.map((post) => post.category))
+    );
     return categories.sort();
   },
 });

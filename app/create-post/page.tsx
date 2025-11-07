@@ -62,7 +62,7 @@ function CreatePostContent() {
               Back to My Posts
             </Button>
           </Link>
-          <Link href="/blog">
+          <Link href="/">
             <Button variant="ghost" size="sm" aria-label="Go to blog platform">
               <BookOpen className="w-4 h-4 mr-2" aria-hidden="true" />
               View Blog

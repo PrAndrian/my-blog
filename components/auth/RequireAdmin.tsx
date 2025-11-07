@@ -1,13 +1,12 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
+import { SignInButton } from "@clerk/nextjs";
+import { Authenticated, Unauthenticated, useQuery } from "convex/react";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Loader2 } from "lucide-react";
-import { Authenticated, Unauthenticated } from "convex/react";
-import { SignInButton } from "@clerk/nextjs";
-import { Button } from "@/components/ui/button";
 
 interface RequireAdminProps {
   children: React.ReactNode;
@@ -41,7 +40,7 @@ function AdminCheck({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isAdmin === false) {
       // User is not an admin, redirect to home
-      router.push("/blog");
+      router.push("/");
     }
   }, [isAdmin, router]);
 
@@ -60,9 +59,10 @@ function AdminCheck({ children }: { children: React.ReactNode }) {
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
         <h2 className="text-2xl font-bold">Access Denied</h2>
         <p className="text-muted-foreground">
-          You do not have permission to access this page. Only administrators can view this content.
+          You do not have permission to access this page. Only administrators
+          can view this content.
         </p>
-        <Button onClick={() => router.push("/blog")}>Go to Blog</Button>
+        <Button onClick={() => router.push("/")}>Go to Blog</Button>
       </div>
     );
   }
@@ -70,5 +70,3 @@ function AdminCheck({ children }: { children: React.ReactNode }) {
   // User is an admin, show the content
   return <>{children}</>;
 }
-
-

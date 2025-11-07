@@ -96,7 +96,7 @@ function AdminContent() {
     <div className="container max-w-6xl mx-auto py-8 px-4">
       {/* Header */}
       <div className="mb-8">
-        <Link href="/blog">
+        <Link href="/">
           <Button variant="ghost" size="sm" className="mb-4" aria-label="Go back to blog">
             <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
             Back to Blog

@@ -105,7 +105,7 @@ export function SlugInput({
       )}
       {value && (
         <p className="text-xs text-muted-foreground">
-          Your post will be available at: <code>/blog/{value}</code>
+          Your post will be available at: <code>/{value}</code>
         </p>
       )}
     </div>

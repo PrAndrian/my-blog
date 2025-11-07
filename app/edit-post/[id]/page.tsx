@@ -106,7 +106,7 @@ function EditPostContent() {
               Back to My Posts
             </Button>
           </Link>
-          <Link href="/blog">
+          <Link href="/">
             <Button variant="ghost" size="sm" aria-label="Go to blog platform">
               <BookOpen className="w-4 h-4 mr-2" aria-hidden="true" />
               View Blog
@@ -124,7 +124,7 @@ function EditPostContent() {
         initialData={{
           title: post.title,
           content: post.content,
-          category: post.category,
+          category: post.category as typeof CATEGORIES[number],
           tags: post.tags,
           slug: post.slug,
           featuredImageUrl: post.featuredImageUrl,

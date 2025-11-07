@@ -150,7 +150,7 @@ function MyPostsContent() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/blog">
+          <Link href="/">
             <Button variant="outline" aria-label="Go to blog platform">
               <BookOpen className="w-4 h-4 mr-2" aria-hidden="true" />
               View Blog

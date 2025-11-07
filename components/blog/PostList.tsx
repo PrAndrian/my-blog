@@ -7,7 +7,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Doc, Id } from "@/convex/_generated/dataModel";
 import { usePagination } from "@/hooks/usePagination";
-import { cn } from "@/lib/utils";
+import { ANIMATION, PAGINATION } from "@/lib/constants";
+import { cn, formatDate } from "@/lib/utils";
 import { gsap } from "gsap";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PostListSkeleton } from "./PostListSkeleton";
@@ -30,15 +31,6 @@ export function PostList({
   const selectedPostRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const postsContainerRef = useRef<HTMLDivElement>(null);
-
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString("en-US", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  };
 
   // Extract available tags with counts from posts
   const availableTags = useMemo(() => {
@@ -73,7 +65,7 @@ export function PostList({
   }, [posts, selectedTags]);
 
   const { paginatedItems, currentPage, totalPages, setCurrentPage } =
-    usePagination(filteredPosts ?? [], 20);
+    usePagination(filteredPosts ?? [], PAGINATION.ITEMS_PER_PAGE);
 
   const handleTagToggle = (tag: string) => {
     setSelectedTags((prev) =>
@@ -93,11 +85,14 @@ export function PostList({
       ) as HTMLElement;
       if (scrollContainer && selectedPostRef.current) {
         const postTop = selectedPostRef.current.offsetTop;
-        gsap.to(scrollContainer, {
+        const animation = gsap.to(scrollContainer, {
           scrollTop: postTop - 20,
-          duration: 0.5,
+          duration: ANIMATION.DURATION_LONG,
           ease: "power2.out",
         });
+        return () => {
+          animation.kill();
+        };
       }
     }
   }, [selectedPostId]);
@@ -117,7 +112,7 @@ export function PostList({
         return;
       }
 
-      gsap.fromTo(
+      const animation = gsap.fromTo(
         cards,
         {
           opacity: 0,
@@ -126,11 +121,15 @@ export function PostList({
         {
           opacity: 1,
           y: 0,
-          duration: 0.3,
+          duration: ANIMATION.DURATION_SHORT,
           ease: "power2.out",
           stagger: 0.05,
         }
       );
+
+      return () => {
+        animation.kill();
+      };
     }
   }, [paginatedItems]);
 
@@ -203,12 +202,13 @@ export function PostList({
             </div>
           ) : (
             <>
-              {paginatedItems.map((post) => (
+              {paginatedItems.map((post, index) => (
                 <Card
                   key={post._id}
                   ref={selectedPostId === post._id ? selectedPostRef : null}
                   data-post-id={post._id}
                   data-post-card
+                  data-first-post={index === 0 ? "true" : undefined}
                   tabIndex={0}
                   role="button"
                   aria-label={`${post.title}. Published ${formatDate(

@@ -1,5 +1,12 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
+
+const FILE_UPLOAD = {
+  MAX_SIZE_MB: 10,
+  MAX_SIZE_BYTES: 10 * 1024 * 1024,
+  ALLOWED_TYPES: ["image/jpeg", "image/png", "image/webp", "image/gif"],
+} as const;
 
 /**
  * Generate an upload URL for file storage
@@ -15,7 +22,6 @@ export const generateUploadUrl = mutation({
       throw new Error("Unauthenticated: You must be logged in to upload files");
     }
 
-    // Check if user is admin or approved author
     const user = await ctx.db
       .query("users")
       .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
@@ -32,7 +38,21 @@ export const generateUploadUrl = mutation({
       );
     }
 
-    // Generate and return upload URL
+    if (args.fileSize && args.fileSize > FILE_UPLOAD.MAX_SIZE_BYTES) {
+      throw new Error(
+        `File size exceeds maximum allowed size of ${FILE_UPLOAD.MAX_SIZE_MB}MB`
+      );
+    }
+
+    if (
+      args.contentType &&
+      !FILE_UPLOAD.ALLOWED_TYPES.includes(args.contentType)
+    ) {
+      throw new Error(
+        `File type not allowed. Allowed types: ${FILE_UPLOAD.ALLOWED_TYPES.join(", ")}`
+      );
+    }
+
     return await ctx.storage.generateUploadUrl();
   },
 });
@@ -43,21 +63,27 @@ export const generateUploadUrl = mutation({
  */
 export const getFileUrl = query({
   args: {
-    storageId: v.string(),
+    storageId: v.union(v.id("_storage"), v.string()),
   },
   returns: v.union(v.string(), v.null()),
   handler: async (ctx, args) => {
-    // Validate that storageId is not empty
     if (!args.storageId) {
       return null;
     }
 
     try {
-      // Get URL from storage ID
-      const url = await ctx.storage.getUrl(args.storageId as any);
+      const storageId =
+        typeof args.storageId === "string"
+          ? (args.storageId as Id<"_storage">)
+          : args.storageId;
+      const url = await ctx.storage.getUrl(storageId);
       return url;
     } catch (error) {
-      console.error("Error getting file URL:", error);
+      if (process.env.NODE_ENV !== "production") {
+        console.error("Error getting file URL:", error, {
+          storageId: args.storageId,
+        });
+      }
       return null;
     }
   },
@@ -69,7 +95,7 @@ export const getFileUrl = query({
  */
 export const deleteFile = mutation({
   args: {
-    storageId: v.string(),
+    storageId: v.union(v.id("_storage"), v.string()),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -78,7 +104,6 @@ export const deleteFile = mutation({
       throw new Error("Unauthenticated");
     }
 
-    // Check if user is admin or approved author
     const user = await ctx.db
       .query("users")
       .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
@@ -93,11 +118,35 @@ export const deleteFile = mutation({
       throw new Error("Unauthorized: Only admins or approved authors can delete files");
     }
 
-    // Delete the file from storage
+    if (user.role !== "admin") {
+      const postsUsingFile = await ctx.db
+        .query("posts")
+        .filter((q) => q.eq(q.field("featuredImageUrl"), args.storageId))
+        .collect();
+
+      const userOwnsPost = postsUsingFile.some(
+        (post) => post.userId === identity.subject
+      );
+
+      if (!userOwnsPost && postsUsingFile.length > 0) {
+        throw new Error(
+          "Unauthorized: You can only delete files that belong to your posts"
+        );
+      }
+    }
+
     try {
-      await ctx.storage.delete(args.storageId as any);
+      const storageId =
+        typeof args.storageId === "string"
+          ? (args.storageId as Id<"_storage">)
+          : args.storageId;
+      await ctx.storage.delete(storageId);
     } catch (error) {
-      console.error("Error deleting file:", error);
+      if (process.env.NODE_ENV !== "production") {
+        console.error("Error deleting file:", error, {
+          storageId: args.storageId,
+        });
+      }
       throw new Error("Failed to delete file");
     }
 

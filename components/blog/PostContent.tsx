@@ -7,13 +7,15 @@ import { Separator } from "@/components/ui/separator";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
+import { ANIMATION } from "@/lib/constants";
+import { formatDate } from "@/lib/utils";
 import { gsap } from "gsap";
-import "highlight.js/styles/github-dark.css";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
+import "highlight.js/styles/github.css";
 
 interface PostContentProps {
   post: Doc<"posts"> | null;
@@ -40,7 +42,7 @@ export function PostContent({ post }: PostContentProps) {
         return;
       }
 
-      gsap.fromTo(
+      const animation = gsap.fromTo(
         articleRef.current,
         {
           opacity: 0,
@@ -49,10 +51,14 @@ export function PostContent({ post }: PostContentProps) {
         {
           opacity: 1,
           y: 0,
-          duration: 0.4,
+          duration: ANIMATION.DURATION_MEDIUM,
           ease: "power2.out",
         }
       );
+
+      return () => {
+        animation.kill();
+      };
     }
   }, [post]);
 
@@ -66,14 +72,6 @@ export function PostContent({ post }: PostContentProps) {
     );
   }
 
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString("en-US", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  };
 
   // Determine the actual image URL to display
   const displayImageUrl = post.featuredImageUrl?.startsWith("http")
@@ -93,7 +91,7 @@ export function PostContent({ post }: PostContentProps) {
         >
           {/* Post header */}
           <header className="mb-8">
-            <h1 className="mb-4 text-4xl font-bold tracking-tight break-words">
+            <h1 className="mb-4 text-4xl font-bold tracking-tight break-words text-foreground">
               {post.title}
             </h1>
 

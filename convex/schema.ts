@@ -7,16 +7,6 @@ import { v } from "convex/values";
 
 export default defineSchema(
   {
-    documents: defineTable({
-      fieldOne: v.string(),
-      fieldTwo: v.object({
-        subFieldOne: v.array(v.number()),
-      }),
-    }),
-    // This definition matches the example query and mutation code:
-    numbers: defineTable({
-      value: v.number(),
-    }),
     // Blog posts table
     posts: defineTable({
       title: v.string(),
@@ -41,8 +31,18 @@ export default defineSchema(
     // Users table for role management
     users: defineTable({
       userId: v.string(), // Clerk user ID
-      role: v.union(v.literal("admin"), v.literal("author"), v.literal("reader")), // "admin", "author", or "reader"
-      authorStatus: v.optional(v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected"))), // Approval status for authors
+      role: v.union(
+        v.literal("admin"),
+        v.literal("author"),
+        v.literal("reader")
+      ), // "admin", "author", or "reader"
+      authorStatus: v.optional(
+        v.union(
+          v.literal("pending"),
+          v.literal("approved"),
+          v.literal("rejected")
+        )
+      ), // Approval status for authors
       name: v.string(),
       email: v.string(),
     })

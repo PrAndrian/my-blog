@@ -42,6 +42,9 @@ const CATEGORIES = [
   "Personal",
 ] as const;
 
+const MAX_TAG_LENGTH = 50;
+const MAX_TAGS = 10;
+
 const postFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   content: z.string().min(1, "Content is required"),
@@ -171,11 +174,33 @@ export function PostForm({
 
   // Tag management functions
   const addTag = () => {
-    const tag = tagInput.trim();
+    const tag = tagInput.trim().toLowerCase();
     const currentTags = form.getValues("tags");
     if (tag && !currentTags.includes(tag)) {
+      if (tag.length > MAX_TAG_LENGTH) {
+        form.setError("tags", {
+          type: "manual",
+          message: `Tag must be ${MAX_TAG_LENGTH} characters or less`,
+        });
+        return;
+      }
+      if (currentTags.length >= MAX_TAGS) {
+        form.setError("tags", {
+          type: "manual",
+          message: `Maximum ${MAX_TAGS} tags allowed`,
+        });
+        return;
+      }
+      if (!/^[a-z0-9\s-]+$/.test(tag)) {
+        form.setError("tags", {
+          type: "manual",
+          message: "Tag can only contain letters, numbers, spaces, and hyphens",
+        });
+        return;
+      }
       form.setValue("tags", [...currentTags, tag]);
       setTagInput("");
+      form.clearErrors("tags");
     }
   };
 

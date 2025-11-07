@@ -34,6 +34,22 @@
     --ring: 140 50% 35%;
 
     --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   /* Dark Theme - Deep Forest & Sage */
@@ -65,6 +81,14 @@
     --border: 140 10% 22%;
     --input: 140 10% 22%;
     --ring: 130 30% 65%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -166,5 +190,140 @@
     max-width: 100% !important;
     width: 100% !important;
     box-sizing: border-box !important;
+  }
+
+  /* Prose color overrides for theme consistency */
+  .prose {
+    color: hsl(var(--foreground));
+  }
+
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    color: hsl(var(--foreground));
+  }
+
+  .prose p {
+    color: hsl(var(--foreground));
+  }
+
+  .prose strong {
+    color: hsl(var(--foreground));
+  }
+
+  .prose li {
+    color: hsl(var(--foreground));
+  }
+
+  .prose code:not(pre code) {
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--muted));
+  }
+
+  .prose pre {
+    background-color: hsl(var(--muted));
+    color: hsl(var(--foreground));
+  }
+
+  .prose pre code {
+    color: hsl(var(--foreground));
+  }
+
+  .prose blockquote {
+    color: hsl(var(--muted-foreground));
+    border-left-color: hsl(var(--border));
+  }
+
+  .prose a {
+    color: hsl(var(--primary));
+  }
+
+  .prose a:hover {
+    color: hsl(var(--primary) / 0.8);
+  }
+
+  /* Override highlight.js styles for dark mode */
+  .dark .hljs {
+    background: hsl(var(--muted)) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .dark .hljs-comment,
+  .dark .hljs-quote {
+    color: hsl(var(--muted-foreground)) !important;
+  }
+
+  .dark .hljs-keyword,
+  .dark .hljs-selector-tag,
+  .dark .hljs-addition {
+    color: hsl(var(--primary)) !important;
+  }
+
+  .dark .hljs-number,
+  .dark .hljs-string,
+  .dark .hljs-meta .hljs-meta-string,
+  .dark .hljs-literal,
+  .dark .hljs-doctag,
+  .dark .hljs-regexp {
+    color: hsl(var(--accent-foreground)) !important;
+  }
+
+  .dark .hljs-title,
+  .dark .hljs-section,
+  .dark .hljs-name,
+  .dark .hljs-selector-id,
+  .dark .hljs-selector-class {
+    color: hsl(var(--primary)) !important;
+  }
+
+  .dark .hljs-attribute,
+  .dark .hljs-attr,
+  .dark .hljs-variable,
+  .dark .hljs-template-variable,
+  .dark .hljs-class .hljs-title,
+  .dark .hljs-type {
+    color: hsl(var(--accent-foreground)) !important;
+  }
+
+  .dark .hljs-symbol,
+  .dark .hljs-bullet,
+  .dark .hljs-subst,
+  .dark .hljs-meta,
+  .dark .hljs-meta .hljs-keyword,
+  .dark .hljs-selector-attr,
+  .dark .hljs-selector-pseudo,
+  .dark .hljs-link {
+    color: hsl(var(--muted-foreground)) !important;
+  }
+
+  .dark .hljs-built_in,
+  .dark .hljs-deletion {
+    color: hsl(var(--destructive)) !important;
+  }
+
+  .dark .hljs-formula {
+    background: hsl(var(--muted)) !important;
+  }
+
+  .dark .hljs-emphasis {
+    font-style: italic;
+  }
+
+  .dark .hljs-strong {
+    font-weight: bold;
+  }
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }
