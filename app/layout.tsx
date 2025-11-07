@@ -1,11 +1,11 @@
-import { ConvexClientProvider } from "@/components/providers/ConvexClientProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ConvexClientProvider } from "@/components/providers/ConvexClientProvider";
+import { getDefaultMetadata } from "@/lib/metadata";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
-import { getDefaultMetadata } from "@/lib/metadata";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });

@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
-import { ArrowLeft, Database, Menu } from "lucide-react";
+import { useQuery } from "convex/react";
+import { ArrowLeft, Menu } from "lucide-react";
 import { useState } from "react";
 
 type MobilePanel = "navigation" | "postList" | "postContent";
@@ -23,7 +23,6 @@ export default function Home() {
 
   // Fetch categories and posts
   const categories = useQuery(api.posts.getCategories) ?? [];
-  const seedPosts = useMutation(api.seed.seedPosts);
   const allPosts =
     useQuery(
       api.posts.getPostsByCategory,
@@ -56,17 +55,6 @@ export default function Home() {
       setSelectedPostId(null);
     } else if (mobilePanel === "postList") {
       setMobilePanel("navigation");
-    }
-  };
-
-  // Handle seeding the database
-  const handleSeedDatabase = async () => {
-    try {
-      await seedPosts();
-      alert("Database seeded successfully! Refresh the page to see the posts.");
-    } catch (error) {
-      console.error("Error seeding database:", error);
-      alert("Error seeding database. Check console for details.");
     }
   };
 
@@ -134,22 +122,11 @@ export default function Home() {
           <div className="flex h-full items-center justify-center bg-background">
             <div className="max-w-2xl p-8 text-center">
               <h1 className="mb-4 text-4xl font-bold">Home</h1>
-              {categories.length === 0 ? (
-                <div className="space-y-4">
-                  <p className="text-lg text-muted-foreground">
-                    No blog posts found. Click the button below to seed the
-                    database with sample posts.
-                  </p>
-                  <Button onClick={handleSeedDatabase} size="lg">
-                    <Database className="mr-2 h-5 w-5" />
-                    Seed Database with Sample Posts
-                  </Button>
-                </div>
-              ) : (
-                <p className="text-lg text-muted-foreground">
-                  Select a category from the sidebar to view articles.
-                </p>
-              )}
+              <p className="text-lg text-muted-foreground">
+                {categories.length === 0
+                  ? "No blog posts found."
+                  : "Select a category from the sidebar to view articles."}
+              </p>
             </div>
           </div>
         )}
@@ -178,22 +155,11 @@ export default function Home() {
           <div className="flex h-full items-center justify-center bg-background">
             <div className="max-w-md p-8 text-center">
               <h1 className="mb-4 text-4xl font-bold">Home</h1>
-              {categories.length === 0 ? (
-                <div className="space-y-4">
-                  <p className="text-muted-foreground">
-                    No blog posts found. Click the button below to seed the
-                    database with sample posts.
-                  </p>
-                  <Button onClick={handleSeedDatabase} size="lg">
-                    <Database className="mr-2 h-5 w-5" />
-                    Seed Database
-                  </Button>
-                </div>
-              ) : (
-                <p className="text-muted-foreground">
-                  Select a category from the menu to view articles.
-                </p>
-              )}
+              <p className="text-muted-foreground">
+                {categories.length === 0
+                  ? "No blog posts found."
+                  : "Select a category from the menu to view articles."}
+              </p>
             </div>
           </div>
         )}
