@@ -29,7 +29,7 @@ export default function BlogPage() {
   const [selectedPostId, setSelectedPostId] = useState<Id<"posts"> | null>(
     null
   );
-  const [mobilePanel, setMobilePanel] = useState<MobilePanel>("navigation");
+  const [mobilePanel, setMobilePanel] = useState<MobilePanel>("postList");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [announcement, setAnnouncement] = useState<string>("");
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
@@ -37,7 +37,6 @@ export default function BlogPage() {
   const isInitialMount = useRef(true);
   const isNavigatingBack = useRef(false);
   const isManualPostSelection = useRef(false);
-  const navigationPanelRef = useRef<HTMLDivElement>(null);
   const postListPanelRef = useRef<HTMLDivElement>(null);
   const homePanelRef = useRef<HTMLDivElement>(null);
   const postContentPanelRef = useRef<HTMLDivElement>(null);
@@ -133,11 +132,7 @@ export default function BlogPage() {
     // On mobile, set the correct panel (no auto-select)
     const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
     if (isMobile) {
-      if (category === "Home") {
-        setMobilePanel("navigation");
-      } else {
-        setMobilePanel("postList");
-      }
+      setMobilePanel("postList");
     }
   }, []);
 
@@ -160,7 +155,7 @@ export default function BlogPage() {
       if (selectedCategory !== "Home" && posts && posts.length > 0) {
         setMobilePanel("postList");
       } else if (selectedCategory === "Home") {
-        setMobilePanel("navigation");
+        setMobilePanel("postList");
       }
       return;
     }
@@ -191,8 +186,11 @@ export default function BlogPage() {
       // If no posts, show post list panel
       setMobilePanel("postList");
     } else if (selectedCategory === "Home") {
-      // If Home is selected, show navigation panel
-      setMobilePanel("navigation");
+      // If Home is selected, show home panel (mobile only, desktop doesn't use mobilePanel)
+      const isMobile = window.innerWidth < 1024;
+      if (isMobile) {
+        setMobilePanel("postList");
+      }
     }
   }, [selectedCategory, posts, selectedPostId, mobilePanel]);
 
@@ -226,13 +224,13 @@ export default function BlogPage() {
       setTimeout(() => {
         isNavigatingBack.current = false;
       }, 0);
-    } else if (mobilePanel === "postList") {
-      // Go back from PostList to Navigation
+    } else if (mobilePanel === "postList" && selectedCategory !== "Home") {
+      // Go back from PostList to Home
       isNavigatingBack.current = true;
-      setMobilePanel("navigation");
+      setMobilePanel("postList");
       setSelectedCategory("Home");
       setSelectedPostId(null);
-      setAnnouncement("Back to navigation");
+      setAnnouncement("Back to home");
       // Reset flag after state updates
       setTimeout(() => {
         isNavigatingBack.current = false;
@@ -273,8 +271,12 @@ export default function BlogPage() {
         return;
       }
 
-      // Only handle navigation keys when not in mobile navigation panel
-      if (mobilePanel === "navigation" && !isMenuOpen) {
+      // Only handle navigation keys when not on home page or menu is open
+      if (
+        mobilePanel === "postList" &&
+        selectedCategory === "Home" &&
+        !isMenuOpen
+      ) {
         return;
       }
 
@@ -383,7 +385,6 @@ export default function BlogPage() {
     const duration = prefersReducedMotion ? 0 : 0.3;
 
     const panels = [
-      { ref: navigationPanelRef, isActive: mobilePanel === "navigation" },
       {
         ref: postListPanelRef,
         isActive: mobilePanel === "postList" && selectedCategory !== "Home",
@@ -418,8 +419,12 @@ export default function BlogPage() {
 
   // Set initial panel state
   useEffect(() => {
-    if (navigationPanelRef.current && mobilePanel === "navigation") {
-      gsap.set(navigationPanelRef.current, {
+    if (
+      homePanelRef.current &&
+      mobilePanel === "postList" &&
+      selectedCategory === "Home"
+    ) {
+      gsap.set(homePanelRef.current, {
         opacity: 1,
         pointerEvents: "auto",
       });
@@ -514,7 +519,7 @@ export default function BlogPage() {
 
       {/* Mobile Header */}
       <div className="flex items-center gap-2 border-b bg-background p-4 lg:hidden min-w-0">
-        {mobilePanel !== "navigation" && (
+        {mobilePanel !== "postList" && (
           <Button
             variant="ghost"
             size="icon"
@@ -525,28 +530,30 @@ export default function BlogPage() {
           </Button>
         )}
         <h1 className="flex-1 text-xl font-bold truncate min-w-0">
-          {mobilePanel === "navigation" && "My Blog"}
-          {mobilePanel === "postList" && `${selectedCategory} Posts`}
+          {mobilePanel === "postList" &&
+            selectedCategory === "Home" &&
+            "My Blog"}
+          {mobilePanel === "postList" &&
+            selectedCategory !== "Home" &&
+            `${selectedCategory} Posts`}
           {mobilePanel === "postContent" && selectedPost?.title}
         </h1>
-        {mobilePanel === "navigation" && (
-          <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-80 p-0 flex flex-col">
-              <div className="flex-1 min-h-0 overflow-hidden">
-                <BlogNavigationSidebar
-                  selectedCategory={selectedCategory}
-                  onSelectCategory={handleSelectCategory}
-                  categories={categories}
-                />
-              </div>
-            </SheetContent>
-          </Sheet>
-        )}
+        <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="flex-shrink-0">
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-80 p-0 flex flex-col">
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <BlogNavigationSidebar
+                selectedCategory={selectedCategory}
+                onSelectCategory={handleSelectCategory}
+                categories={categories}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
 
       {/* Desktop Layout - Dynamic Columns */}
@@ -593,17 +600,6 @@ export default function BlogPage() {
 
       {/* Mobile Layout - Single Panel */}
       <div className="h-[calc(100vh-73px)] lg:hidden relative">
-        <div
-          ref={navigationPanelRef}
-          className="absolute inset-0 opacity-0 pointer-events-none"
-        >
-          <BlogNavigationSidebar
-            selectedCategory={selectedCategory}
-            onSelectCategory={handleSelectCategory}
-            categories={categories}
-          />
-        </div>
-
         <div
           ref={postListPanelRef}
           className="absolute inset-0 opacity-0 pointer-events-none"

@@ -1,5 +1,6 @@
 "use client";
 
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -8,6 +9,7 @@ import { Doc } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { gsap } from "gsap";
 import "highlight.js/styles/github-dark.css";
+import Image from "next/image";
 import { useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
@@ -79,59 +81,117 @@ export function PostContent({ post }: PostContentProps) {
     : imageUrl; // It's a storage ID, use the converted URL
 
   return (
-    <ScrollArea className="h-full bg-background">
-      <article ref={articleRef} className="mx-auto max-w-4xl px-4 md:px-6 py-8">
-        {/* Post header */}
-        <header className="mb-8">
-          <h1 className="mb-4 text-4xl font-bold tracking-tight break-words">
-            {post.title}
-          </h1>
+    <ScrollArea className="h-full bg-background overflow-x-hidden">
+      <div
+        className="w-full max-w-full min-w-0 box-border"
+        style={{ maxWidth: "100%" }}
+      >
+        <article
+          ref={articleRef}
+          className="mx-auto w-full max-w-full md:max-w-4xl min-w-0 px-4 md:px-6 py-8 box-border"
+          style={{ maxWidth: "100%", width: "100%" }}
+        >
+          {/* Post header */}
+          <header className="mb-8">
+            <h1 className="mb-4 text-4xl font-bold tracking-tight break-words">
+              {post.title}
+            </h1>
 
-          {/* Meta information */}
-          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            <span>{formatDate(post.date)}</span>
-            <span>•</span>
-            <span>{post.author}</span>
-            <span>•</span>
-            <Badge variant="secondary">{post.category}</Badge>
-          </div>
+            {/* Meta information */}
+            <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+              <span>{formatDate(post.date)}</span>
+              <span>•</span>
+              <span>{post.author}</span>
+              <span>•</span>
+              <Badge variant="secondary">{post.category}</Badge>
+            </div>
 
-          {/* Tags */}
-          {post.tags && post.tags.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {post.tags.map((tag, index) => (
-                <Badge key={index} variant="outline" className="text-xs">
-                  {tag}
-                </Badge>
-              ))}
+            {/* Tags */}
+            {post.tags && post.tags.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {post.tags.map((tag, index) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </header>
+
+          <Separator className="mb-8" />
+
+          {/* Featured image */}
+          {displayImageUrl && (
+            <div className="mb-8">
+              <AspectRatio
+                ratio={16 / 9}
+                className="overflow-hidden rounded-lg"
+              >
+                <Image
+                  src={displayImageUrl}
+                  alt={post.title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 800px"
+                />
+              </AspectRatio>
             </div>
           )}
-        </header>
 
-        <Separator className="mb-8" />
+          {/* Post content - Markdown rendered */}
+          <div className="prose prose-slate dark:prose-invert max-w-none md:max-w-none break-words w-full">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeHighlight]}
+              components={{
+                img: ({ src, alt }) => {
+                  if (!src) return null;
+                  // Use regular img for data URLs or if src is not a valid URL
+                  const isDataUrl = src.startsWith("data:");
+                  const isValidUrl =
+                    src.startsWith("http") || src.startsWith("/");
 
-        {/* Featured image */}
-        {displayImageUrl && (
-          <div className="mb-8">
-            <img
-              src={displayImageUrl}
-              alt={post.title}
-              className="h-auto w-full max-w-full rounded-lg object-cover"
-              style={{ maxHeight: "500px" }}
-            />
+                  if (isDataUrl || !isValidUrl) {
+                    return (
+                      <div className="my-4">
+                        <AspectRatio
+                          ratio={16 / 9}
+                          className="overflow-hidden rounded-lg"
+                        >
+                          <img
+                            src={src}
+                            alt={alt || ""}
+                            className="h-full w-full object-cover"
+                          />
+                        </AspectRatio>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="my-4">
+                      <AspectRatio
+                        ratio={16 / 9}
+                        className="overflow-hidden rounded-lg"
+                      >
+                        <Image
+                          src={src}
+                          alt={alt || ""}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 800px"
+                        />
+                      </AspectRatio>
+                    </div>
+                  );
+                },
+              }}
+            >
+              {post.content}
+            </ReactMarkdown>
           </div>
-        )}
-
-        {/* Post content - Markdown rendered */}
-        <div className="prose prose-slate dark:prose-invert max-w-none break-words">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeHighlight]}
-          >
-            {post.content}
-          </ReactMarkdown>
-        </div>
-      </article>
+        </article>
+      </div>
     </ScrollArea>
   );
 }

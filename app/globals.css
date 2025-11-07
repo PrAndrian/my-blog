@@ -92,9 +92,17 @@
 
 @layer components {
   /* Prose code block overflow handling for mobile */
+  .prose {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    box-sizing: border-box;
+  }
+
   .prose pre {
     overflow-x: auto;
     max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .prose pre code {
@@ -102,9 +110,11 @@
     overflow-x: auto;
     word-break: normal;
     white-space: pre;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
-  .prose code {
+  .prose code:not(pre code) {
     word-break: break-word;
     overflow-wrap: break-word;
   }
@@ -118,5 +128,43 @@
     display: block;
     overflow-x: auto;
     white-space: nowrap;
+    max-width: 100%;
+  }
+
+  /* Ensure all prose content respects container width */
+  .prose > * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Fix Radix ScrollArea viewport width constraint */
+  [data-radix-scroll-area-viewport] {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Ensure wrapper divs don't expand beyond viewport */
+  [data-radix-scroll-area-viewport] > div {
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    display: block !important;
+  }
+
+  /* Force article to respect container width */
+  [data-radix-scroll-area-viewport] article {
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Ensure prose content doesn't overflow */
+  [data-radix-scroll-area-viewport] .prose {
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 }
