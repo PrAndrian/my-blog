@@ -4,16 +4,54 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Doc } from "@/convex/_generated/dataModel";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
+import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
 
 interface PostContentProps {
   post: Doc<"posts"> | null;
 }
 
 export function PostContent({ post }: PostContentProps) {
+  const articleRef = useRef<HTMLElement>(null);
+  
+  // Convert Convex storage ID to URL if needed
+  const imageUrl = useQuery(
+    api.files.getFileUrl,
+    post?.featuredImageUrl ? { storageId: post.featuredImageUrl } : "skip"
+  );
+
+  // Animate content fade-in with GSAP
+  useEffect(() => {
+    if (post && articleRef.current) {
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      
+      if (prefersReducedMotion) {
+        gsap.set(articleRef.current, { opacity: 1 });
+        return;
+      }
+
+      gsap.fromTo(
+        articleRef.current,
+        {
+          opacity: 0,
+          y: 20,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.4,
+          ease: "power2.out",
+        }
+      );
+    }
+  }, [post]);
+
   if (!post) {
     return (
       <div className="flex h-full items-center justify-center bg-background">
@@ -33,9 +71,14 @@ export function PostContent({ post }: PostContentProps) {
     });
   };
 
+  // Determine the actual image URL to display
+  const displayImageUrl = post.featuredImageUrl?.startsWith("http")
+    ? post.featuredImageUrl  // It's already a full URL
+    : imageUrl;               // It's a storage ID, use the converted URL
+
   return (
     <ScrollArea className="h-full bg-background">
-      <article className="mx-auto max-w-4xl px-6 py-8">
+      <article ref={articleRef} className="mx-auto max-w-4xl px-6 py-8">
         {/* Post header */}
         <header className="mb-8">
           <h1 className="mb-4 text-4xl font-bold tracking-tight">{post.title}</h1>
@@ -64,10 +107,10 @@ export function PostContent({ post }: PostContentProps) {
         <Separator className="mb-8" />
 
         {/* Featured image */}
-        {post.featuredImageUrl && (
+        {displayImageUrl && (
           <div className="mb-8">
             <img
-              src={post.featuredImageUrl}
+              src={displayImageUrl}
               alt={post.title}
               className="h-auto w-full rounded-lg object-cover"
               style={{ maxHeight: "500px" }}

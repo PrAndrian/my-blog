@@ -1,60 +1,448 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useQuery } from "convex/react";
+import { BlogNavigationSidebar } from "@/components/blog/BlogNavigationSidebar";
+import { PostContent } from "@/components/blog/PostContent";
+import { PostList } from "@/components/blog/PostList";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { BlogNavigationSidebar } from "@/components/blog/BlogNavigationSidebar";
-import { PostList } from "@/components/blog/PostList";
-import { PostContent } from "@/components/blog/PostContent";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Menu, ArrowLeft } from "lucide-react";
+import { useQuery } from "convex/react";
+import { gsap } from "gsap";
+import { ArrowLeft, HelpCircle, Keyboard, Menu } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type MobilePanel = "navigation" | "postList" | "postContent";
 
 export default function BlogPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState<string>("Home");
-  const [selectedPostId, setSelectedPostId] = useState<Id<"posts"> | null>(null);
+  const [selectedPostId, setSelectedPostId] = useState<Id<"posts"> | null>(
+    null
+  );
   const [mobilePanel, setMobilePanel] = useState<MobilePanel>("navigation");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [announcement, setAnnouncement] = useState<string>("");
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+  const announcementRef = useRef<HTMLDivElement>(null);
+  const isInitialMount = useRef(true);
+  const navigationPanelRef = useRef<HTMLDivElement>(null);
+  const postListPanelRef = useRef<HTMLDivElement>(null);
+  const homePanelRef = useRef<HTMLDivElement>(null);
+  const postContentPanelRef = useRef<HTMLDivElement>(null);
 
   // Fetch categories and posts
   const categories = useQuery(api.posts.getCategories) ?? [];
   const posts =
-    selectedCategory !== "Home"
-      ? useQuery(api.posts.getPostsByCategory, { category: selectedCategory }) ?? []
-      : [];
+    useQuery(
+      api.posts.getPostsByCategory,
+      selectedCategory !== "Home" ? { category: selectedCategory } : "skip"
+    ) ?? [];
 
   // Get selected post
-  const selectedPost = posts.find((post) => post._id === selectedPostId) ?? null;
+  const selectedPost =
+    posts.find((post) => post._id === selectedPostId) ?? null;
+
+  // Initialize from URL params on mount
+  useEffect(() => {
+    const categoryParam = searchParams.get("category");
+    const postParam = searchParams.get("post");
+
+    if (categoryParam && categoryParam !== selectedCategory) {
+      setSelectedCategory(categoryParam);
+      if (postParam) {
+        setSelectedPostId(postParam as Id<"posts">);
+        setMobilePanel("postContent");
+      } else {
+        setMobilePanel("postList");
+      }
+    } else if (postParam && !selectedPostId) {
+      setSelectedPostId(postParam as Id<"posts">);
+      setMobilePanel("postContent");
+    }
+    isInitialMount.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-select latest post when URL has category but no post param
+  useEffect(() => {
+    const categoryParam = searchParams.get("category");
+    const postParam = searchParams.get("post");
+
+    if (
+      categoryParam &&
+      categoryParam !== "Home" &&
+      !postParam &&
+      posts &&
+      posts.length > 0 &&
+      !selectedPostId &&
+      !isInitialMount.current
+    ) {
+      const latestPost = posts.reduce((latest, current) => {
+        return current.date > latest.date ? current : latest;
+      }, posts[0]);
+
+      if (latestPost) {
+        setSelectedPostId(latestPost._id);
+        setMobilePanel("postContent");
+      }
+    }
+  }, [searchParams, posts, selectedPostId]);
+
+  // Sync state to URL
+  useEffect(() => {
+    if (isInitialMount.current) return;
+
+    const params = new URLSearchParams();
+    if (selectedCategory !== "Home") {
+      params.set("category", selectedCategory);
+      if (selectedPostId) {
+        params.set("post", selectedPostId);
+      }
+    }
+
+    const newUrl = params.toString() ? `/blog?${params.toString()}` : "/blog";
+
+    router.replace(newUrl, { scroll: false });
+  }, [selectedCategory, selectedPostId, router]);
 
   // Handle category selection
-  const handleSelectCategory = (category: string) => {
+  const handleSelectCategory = useCallback((category: string) => {
     setSelectedCategory(category);
     setSelectedPostId(null);
     setMobilePanel("postList");
     setIsMenuOpen(false);
-  };
+    setAnnouncement(`Navigated to ${category} category`);
+  }, []);
+
+  // Auto-select latest post when category is selected
+  useEffect(() => {
+    if (
+      selectedCategory !== "Home" &&
+      posts &&
+      posts.length > 0 &&
+      !selectedPostId &&
+      !isInitialMount.current
+    ) {
+      // Find the latest post by date (highest date value)
+      const latestPost = posts.reduce((latest, current) => {
+        return current.date > latest.date ? current : latest;
+      }, posts[0]);
+
+      if (latestPost) {
+        setSelectedPostId(latestPost._id);
+        setMobilePanel("postContent");
+        setAnnouncement(`Reading ${latestPost.title}`);
+      }
+    }
+  }, [selectedCategory, posts, selectedPostId]);
 
   // Handle post selection
-  const handleSelectPost = (postId: Id<"posts">) => {
-    setSelectedPostId(postId);
-    setMobilePanel("postContent");
-  };
+  const handleSelectPost = useCallback(
+    (postId: Id<"posts">) => {
+      setSelectedPostId(postId);
+      setMobilePanel("postContent");
+      const post = posts.find((p) => p._id === postId);
+      if (post) {
+        setAnnouncement(`Reading ${post.title}`);
+      }
+    },
+    [posts]
+  );
 
   // Handle mobile back navigation
-  const handleMobileBack = () => {
+  const handleMobileBack = useCallback(() => {
     if (mobilePanel === "postContent") {
       setMobilePanel("postList");
       setSelectedPostId(null);
+      setAnnouncement(`Back to ${selectedCategory} posts`);
     } else if (mobilePanel === "postList") {
       setMobilePanel("navigation");
+      setAnnouncement("Back to navigation");
     }
-  };
+  }, [mobilePanel, selectedCategory]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept if user is typing in an input/textarea
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target instanceof HTMLElement && e.target.isContentEditable)
+      ) {
+        return;
+      }
+
+      // ? key - show keyboard shortcuts help
+      if (e.key === "?") {
+        e.preventDefault();
+        setShowKeyboardHelp(true);
+        return;
+      }
+
+      // Escape key - close mobile menu or go back
+      if (e.key === "Escape") {
+        if (showKeyboardHelp) {
+          setShowKeyboardHelp(false);
+        } else if (isMenuOpen) {
+          setIsMenuOpen(false);
+        } else if (mobilePanel === "postContent") {
+          handleMobileBack();
+        } else if (mobilePanel === "postList") {
+          handleMobileBack();
+        }
+        return;
+      }
+
+      // Only handle navigation keys when not in mobile navigation panel
+      if (mobilePanel === "navigation" && !isMenuOpen) {
+        return;
+      }
+
+      // j/k keys for next/previous post (Vim-style)
+      if (e.key === "j" || e.key === "k") {
+        if (selectedCategory === "Home" || !posts || posts.length === 0) {
+          return;
+        }
+
+        e.preventDefault();
+        const currentIndex = selectedPostId
+          ? posts.findIndex((p) => p._id === selectedPostId)
+          : -1;
+
+        if (e.key === "j") {
+          // Next post
+          const nextIndex =
+            currentIndex < posts.length - 1 ? currentIndex + 1 : 0;
+          handleSelectPost(posts[nextIndex]._id);
+        } else {
+          // Previous post
+          const prevIndex =
+            currentIndex > 0 ? currentIndex - 1 : posts.length - 1;
+          handleSelectPost(posts[prevIndex]._id);
+        }
+        return;
+      }
+
+      // Arrow keys for navigation
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        if (selectedCategory === "Home" || !posts || posts.length === 0) {
+          return;
+        }
+
+        e.preventDefault();
+        const currentIndex = selectedPostId
+          ? posts.findIndex((p) => p._id === selectedPostId)
+          : -1;
+
+        if (e.key === "ArrowDown") {
+          const nextIndex =
+            currentIndex < posts.length - 1 ? currentIndex + 1 : currentIndex;
+          if (nextIndex !== currentIndex) {
+            handleSelectPost(posts[nextIndex]._id);
+          }
+        } else {
+          const prevIndex = currentIndex > 0 ? currentIndex - 1 : 0;
+          if (prevIndex !== currentIndex) {
+            handleSelectPost(posts[prevIndex]._id);
+          }
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [
+    mobilePanel,
+    isMenuOpen,
+    selectedCategory,
+    selectedPostId,
+    posts,
+    handleSelectPost,
+    handleMobileBack,
+    showKeyboardHelp,
+  ]);
+
+  // Focus management - auto-focus first post when category changes
+  useEffect(() => {
+    if (
+      selectedCategory !== "Home" &&
+      posts &&
+      posts.length > 0 &&
+      !selectedPostId &&
+      mobilePanel === "postList"
+    ) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        const firstPostCard = document.querySelector(
+          "[data-post-id]"
+        ) as HTMLElement;
+        if (firstPostCard) {
+          firstPostCard.focus();
+        }
+      }, 100);
+    }
+  }, [selectedCategory, posts, selectedPostId, mobilePanel]);
+
+  // Announce changes to screen readers
+  useEffect(() => {
+    if (announcement && announcementRef.current) {
+      announcementRef.current.textContent = announcement;
+      setTimeout(() => {
+        if (announcementRef.current) {
+          announcementRef.current.textContent = "";
+        }
+      }, 1000);
+    }
+  }, [announcement]);
+
+  // Animate mobile panel transitions with GSAP
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    const duration = prefersReducedMotion ? 0 : 0.3;
+
+    const panels = [
+      { ref: navigationPanelRef, isActive: mobilePanel === "navigation" },
+      {
+        ref: postListPanelRef,
+        isActive: mobilePanel === "postList" && selectedCategory !== "Home",
+      },
+      {
+        ref: homePanelRef,
+        isActive: mobilePanel === "postList" && selectedCategory === "Home",
+      },
+      { ref: postContentPanelRef, isActive: mobilePanel === "postContent" },
+    ];
+
+    panels.forEach(({ ref, isActive }) => {
+      if (ref.current) {
+        if (isActive) {
+          gsap.to(ref.current, {
+            opacity: 1,
+            duration,
+            ease: "power2.out",
+            pointerEvents: "auto",
+          });
+        } else {
+          gsap.to(ref.current, {
+            opacity: 0,
+            duration,
+            ease: "power2.out",
+            pointerEvents: "none",
+          });
+        }
+      }
+    });
+  }, [mobilePanel, selectedCategory]);
+
+  // Set initial panel state
+  useEffect(() => {
+    if (navigationPanelRef.current && mobilePanel === "navigation") {
+      gsap.set(navigationPanelRef.current, {
+        opacity: 1,
+        pointerEvents: "auto",
+      });
+    }
+  }, []);
 
   return (
     <div className="h-screen w-full overflow-hidden">
+      {/* ARIA live region for screen reader announcements */}
+      <div
+        ref={announcementRef}
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      />
+
+      {/* Keyboard Shortcuts Help Dialog */}
+      <Dialog open={showKeyboardHelp} onOpenChange={setShowKeyboardHelp}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Keyboard className="h-5 w-5" />
+              Keyboard Shortcuts
+            </DialogTitle>
+            <DialogDescription>
+              Navigate the blog using these keyboard shortcuts
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-4">
+            <div className="flex items-start justify-between">
+              <span className="text-sm font-medium">Navigation</span>
+              <div className="text-right text-sm text-muted-foreground space-y-1">
+                <div>
+                  <kbd className="px-2 py-1 bg-muted rounded text-xs">j</kbd>{" "}
+                  Next post
+                </div>
+                <div>
+                  <kbd className="px-2 py-1 bg-muted rounded text-xs">k</kbd>{" "}
+                  Previous post
+                </div>
+                <div>
+                  <kbd className="px-2 py-1 bg-muted rounded text-xs">↑</kbd> /{" "}
+                  <kbd className="px-2 py-1 bg-muted rounded text-xs">↓</kbd>{" "}
+                  Navigate posts
+                </div>
+              </div>
+            </div>
+            <div className="flex items-start justify-between">
+              <span className="text-sm font-medium">Actions</span>
+              <div className="text-right text-sm text-muted-foreground space-y-1">
+                <div>
+                  <kbd className="px-2 py-1 bg-muted rounded text-xs">
+                    Enter
+                  </kbd>{" "}
+                  /{" "}
+                  <kbd className="px-2 py-1 bg-muted rounded text-xs">
+                    Space
+                  </kbd>{" "}
+                  Select post
+                </div>
+                <div>
+                  <kbd className="px-2 py-1 bg-muted rounded text-xs">Esc</kbd>{" "}
+                  Go back / Close
+                </div>
+              </div>
+            </div>
+            <div className="flex items-start justify-between">
+              <span className="text-sm font-medium">Help</span>
+              <div className="text-right text-sm text-muted-foreground">
+                <div>
+                  <kbd className="px-2 py-1 bg-muted rounded text-xs">?</kbd>{" "}
+                  Show this help
+                </div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Desktop Help Button */}
+      <div className="hidden lg:block fixed bottom-4 right-4 z-50">
+        <Button
+          variant="outline"
+          size="icon"
+          className="rounded-full shadow-lg"
+          aria-label="Show keyboard shortcuts"
+          onClick={() => setShowKeyboardHelp(true)}
+        >
+          <HelpCircle className="h-5 w-5" />
+        </Button>
+      </div>
+
       {/* Mobile Header */}
       <div className="flex items-center gap-2 border-b bg-background p-4 lg:hidden">
         {mobilePanel !== "navigation" && (
@@ -85,8 +473,14 @@ export default function BlogPage() {
         )}
       </div>
 
-      {/* Desktop Layout - Three Columns */}
-      <div className="hidden h-full lg:grid lg:grid-cols-[280px_400px_1fr]">
+      {/* Desktop Layout - Dynamic Columns */}
+      <div
+        className={`hidden h-full lg:grid ${
+          selectedCategory === "Home"
+            ? "lg:grid-cols-[280px_1fr]"
+            : "lg:grid-cols-[280px_400px_1fr]"
+        }`}
+      >
         {/* Left Panel - Navigation */}
         <BlogNavigationSidebar
           selectedCategory={selectedCategory}
@@ -94,21 +488,17 @@ export default function BlogPage() {
           categories={categories}
         />
 
-        {/* Middle Panel - Post List */}
-        {selectedCategory !== "Home" ? (
+        {/* Middle Panel - Post List (hidden when Home is selected) */}
+        {selectedCategory !== "Home" && (
           <PostList
             posts={posts}
             selectedPostId={selectedPostId}
             onSelectPost={handleSelectPost}
             category={selectedCategory}
           />
-        ) : (
-          <div className="flex h-full items-center justify-center border-r bg-background">
-            <p className="text-lg text-muted-foreground">Welcome to My Blog</p>
-          </div>
         )}
 
-        {/* Right Panel - Post Content */}
+        {/* Right Panel - Post Content or Home */}
         {selectedCategory !== "Home" ? (
           <PostContent post={selectedPost} />
         ) : (
@@ -124,36 +514,54 @@ export default function BlogPage() {
       </div>
 
       {/* Mobile Layout - Single Panel */}
-      <div className="h-[calc(100vh-73px)] lg:hidden">
-        {mobilePanel === "navigation" && (
+      <div className="h-[calc(100vh-73px)] lg:hidden relative">
+        <div
+          ref={navigationPanelRef}
+          className="absolute inset-0 opacity-0 pointer-events-none"
+        >
           <BlogNavigationSidebar
             selectedCategory={selectedCategory}
             onSelectCategory={handleSelectCategory}
             categories={categories}
           />
-        )}
+        </div>
 
-        {mobilePanel === "postList" && selectedCategory !== "Home" && (
-          <PostList
-            posts={posts}
-            selectedPostId={selectedPostId}
-            onSelectPost={handleSelectPost}
-            category={selectedCategory}
-          />
-        )}
+        <div
+          ref={postListPanelRef}
+          className="absolute inset-0 opacity-0 pointer-events-none"
+        >
+          {selectedCategory !== "Home" && (
+            <PostList
+              posts={posts}
+              selectedPostId={selectedPostId}
+              onSelectPost={handleSelectPost}
+              category={selectedCategory}
+            />
+          )}
+        </div>
 
-        {mobilePanel === "postList" && selectedCategory === "Home" && (
-          <div className="flex h-full items-center justify-center bg-background">
-            <div className="max-w-md p-8 text-center">
-              <h1 className="mb-4 text-4xl font-bold">Home</h1>
-              <p className="text-muted-foreground">
-                Select a category from the menu to view articles.
-              </p>
+        <div
+          ref={homePanelRef}
+          className="absolute inset-0 opacity-0 pointer-events-none"
+        >
+          {selectedCategory === "Home" && (
+            <div className="flex h-full items-center justify-center bg-background">
+              <div className="max-w-md p-8 text-center">
+                <h1 className="mb-4 text-4xl font-bold">Home</h1>
+                <p className="text-muted-foreground">
+                  Select a category from the menu to view articles.
+                </p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {mobilePanel === "postContent" && <PostContent post={selectedPost} />}
+        <div
+          ref={postContentPanelRef}
+          className="absolute inset-0 opacity-0 pointer-events-none"
+        >
+          <PostContent post={selectedPost} />
+        </div>
       </div>
     </div>
   );

@@ -13,10 +13,16 @@ import {
   Search,
   ShoppingBag,
   Sparkles,
+  PlusCircle,
+  FileEdit,
+  Shield,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import Link from "next/link";
 
 interface BlogNavigationSidebarProps {
   selectedCategory: string;
@@ -42,10 +48,22 @@ export function BlogNavigationSidebar({
 }: BlogNavigationSidebarProps) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const isAuthor = useQuery(api.users.isAuthor);
+  const isAdmin = useQuery(api.users.isAdmin);
+  const canPerformAuthorActions = useQuery(api.users.canPerformAuthorActions);
+  const categoryButtonsRef = useRef<Map<string, HTMLButtonElement>>(new Map());
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Focus management for selected category
+  useEffect(() => {
+    const selectedButton = categoryButtonsRef.current.get(selectedCategory);
+    if (selectedButton) {
+      selectedButton.focus();
+    }
+  }, [selectedCategory]);
 
   return (
     <div
@@ -84,15 +102,66 @@ export function BlogNavigationSidebar({
         <div className="space-y-1">
           {/* Home button */}
           <Button
+            ref={(el) => {
+              if (el) categoryButtonsRef.current.set("Home", el);
+            }}
             variant={selectedCategory === "Home" ? "secondary" : "ghost"}
-            className="w-full justify-start"
+            className="w-full justify-start transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             onClick={() => onSelectCategory("Home")}
+            aria-label="Navigate to home"
+            aria-current={selectedCategory === "Home" ? "page" : undefined}
           >
-            <Home className="mr-2 h-4 w-4" />
+            <Home className="mr-2 h-4 w-4" aria-hidden="true" />
             Home
           </Button>
 
           <Separator />
+
+          {/* Author section - visible to admins and approved authors */}
+          {canPerformAuthorActions && (
+            <>
+              <div className="px-2 py-2">
+                <h2 className="mb-2 px-2 text-sm font-semibold tracking-tight text-muted-foreground">
+                  Author
+                </h2>
+                <div className="space-y-1">
+                  <Link href="/my-posts">
+                    <Button variant="ghost" className="w-full justify-start" aria-label="View my posts">
+                      <FileEdit className="mr-2 h-4 w-4" aria-hidden="true" />
+                      My Posts
+                    </Button>
+                  </Link>
+                  <Link href="/create-post">
+                    <Button variant="ghost" className="w-full justify-start" aria-label="Create a new post">
+                      <PlusCircle className="mr-2 h-4 w-4" aria-hidden="true" />
+                      Create Post
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
+
+          {/* Admin section - only visible to admins */}
+          {isAdmin && (
+            <>
+              <div className="px-2 py-2">
+                <h2 className="mb-2 px-2 text-sm font-semibold tracking-tight text-muted-foreground">
+                  Admin
+                </h2>
+                <div className="space-y-1">
+                  <Link href="/admin">
+                    <Button variant="ghost" className="w-full justify-start" aria-label="Open admin dashboard">
+                      <Shield className="mr-2 h-4 w-4" aria-hidden="true" />
+                      Admin Dashboard
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
 
           {/* Articles section */}
           <div className="px-2 py-2">
@@ -103,14 +172,21 @@ export function BlogNavigationSidebar({
               {categories.map((category) => (
                 <Button
                   key={category}
+                  ref={(el) => {
+                    if (el) categoryButtonsRef.current.set(category, el);
+                  }}
                   variant={
                     selectedCategory === category ? "secondary" : "ghost"
                   }
-                  className="w-full justify-start"
+                  className="w-full justify-start transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   onClick={() => onSelectCategory(category)}
+                  aria-label={`View ${category} articles`}
+                  aria-current={selectedCategory === category ? "page" : undefined}
                 >
-                  {categoryIcons[category] || <BookOpen className="h-4 w-4" />}
-                  <span className="ml-2">{category}</span>
+                  <span aria-hidden="true" className="mr-2">
+                    {categoryIcons[category] || <BookOpen className="h-4 w-4" />}
+                  </span>
+                  <span>{category}</span>
                 </Button>
               ))}
             </div>
