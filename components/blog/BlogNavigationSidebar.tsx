@@ -68,7 +68,7 @@ export function BlogNavigationSidebar({
   return (
     <div
       className={cn(
-        "flex flex-col border-r bg-background m-2 mr-0 border-l border-y rounded-l-xl",
+        "flex flex-col border-r bg-background m-2 mr-0 border-l border-y rounded-l-xl h-full",
         selectedCategory === "Home" ? "rounded-r-xl" : "rounded-r-none"
       )}
     >
@@ -98,7 +98,7 @@ export function BlogNavigationSidebar({
       <Separator />
 
       {/* Navigation */}
-      <ScrollArea className="flex-1 px-2 py-4">
+      <ScrollArea className="flex-1 min-h-0 px-2 py-4">
         <div className="space-y-1">
           {/* Home button */}
           <Button

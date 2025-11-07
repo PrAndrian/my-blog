@@ -89,3 +89,34 @@
     }
   }
 }
+
+@layer components {
+  /* Prose code block overflow handling for mobile */
+  .prose pre {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  .prose pre code {
+    display: block;
+    overflow-x: auto;
+    word-break: normal;
+    white-space: pre;
+  }
+
+  .prose code {
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .prose img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .prose table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}

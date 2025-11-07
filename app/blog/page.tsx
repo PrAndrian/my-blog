@@ -35,6 +35,8 @@ export default function BlogPage() {
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const announcementRef = useRef<HTMLDivElement>(null);
   const isInitialMount = useRef(true);
+  const isNavigatingBack = useRef(false);
+  const isManualPostSelection = useRef(false);
   const navigationPanelRef = useRef<HTMLDivElement>(null);
   const postListPanelRef = useRef<HTMLDivElement>(null);
   const homePanelRef = useRef<HTMLDivElement>(null);
@@ -73,8 +75,14 @@ export default function BlogPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-select latest post when URL has category but no post param
+  // Auto-select latest post when URL has category but no post param (desktop only)
   useEffect(() => {
+    // Don't auto-select on mobile
+    const isMobile = window.innerWidth < 1024;
+    if (isMobile) {
+      return;
+    }
+
     const categoryParam = searchParams.get("category");
     const postParam = searchParams.get("post");
 
@@ -119,42 +127,89 @@ export default function BlogPage() {
   const handleSelectCategory = useCallback((category: string) => {
     setSelectedCategory(category);
     setSelectedPostId(null);
-    setMobilePanel("postList");
     setIsMenuOpen(false);
     setAnnouncement(`Navigated to ${category} category`);
+
+    // On mobile, set the correct panel (no auto-select)
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
+    if (isMobile) {
+      if (category === "Home") {
+        setMobilePanel("navigation");
+      } else {
+        setMobilePanel("postList");
+      }
+    }
   }, []);
 
-  // Auto-select latest post when category is selected
+  // Auto-select latest post when category is selected (desktop only)
   useEffect(() => {
+    // Don't auto-select if user manually selected a post or is navigating back
+    if (isManualPostSelection.current || isNavigatingBack.current) {
+      return;
+    }
+
+    // Don't auto-select on mobile (viewport width < 1024px)
+    const isMobile = window.innerWidth < 1024;
+    if (isMobile) {
+      // On mobile, just ensure correct panel is shown
+      // Don't override if a post is already selected (user clicked on a post)
+      // or if we're already on postContent panel
+      if (selectedPostId || mobilePanel === "postContent") {
+        return;
+      }
+      if (selectedCategory !== "Home" && posts && posts.length > 0) {
+        setMobilePanel("postList");
+      } else if (selectedCategory === "Home") {
+        setMobilePanel("navigation");
+      }
+      return;
+    }
+
     if (
       selectedCategory !== "Home" &&
       posts &&
       posts.length > 0 &&
       !selectedPostId &&
-      !isInitialMount.current
+      !isInitialMount.current &&
+      mobilePanel !== "postList" // Don't auto-select if user explicitly navigated to postList
     ) {
-      // Find the latest post by date (highest date value)
-      const latestPost = posts.reduce((latest, current) => {
-        return current.date > latest.date ? current : latest;
-      }, posts[0]);
+      // Sort posts by date descending (latest first) to ensure we get the most recent
+      const sortedPosts = [...posts].sort((a, b) => b.date - a.date);
+      const latestPost = sortedPosts[0];
 
       if (latestPost) {
         setSelectedPostId(latestPost._id);
         setMobilePanel("postContent");
         setAnnouncement(`Reading ${latestPost.title}`);
       }
+    } else if (
+      selectedCategory !== "Home" &&
+      posts &&
+      posts.length === 0 &&
+      !isInitialMount.current
+    ) {
+      // If no posts, show post list panel
+      setMobilePanel("postList");
+    } else if (selectedCategory === "Home") {
+      // If Home is selected, show navigation panel
+      setMobilePanel("navigation");
     }
-  }, [selectedCategory, posts, selectedPostId]);
+  }, [selectedCategory, posts, selectedPostId, mobilePanel]);
 
   // Handle post selection
   const handleSelectPost = useCallback(
     (postId: Id<"posts">) => {
+      isManualPostSelection.current = true;
       setSelectedPostId(postId);
       setMobilePanel("postContent");
       const post = posts.find((p) => p._id === postId);
       if (post) {
         setAnnouncement(`Reading ${post.title}`);
       }
+      // Reset flag after state updates
+      setTimeout(() => {
+        isManualPostSelection.current = false;
+      }, 0);
     },
     [posts]
   );
@@ -162,12 +217,26 @@ export default function BlogPage() {
   // Handle mobile back navigation
   const handleMobileBack = useCallback(() => {
     if (mobilePanel === "postContent") {
+      // Go back from PostContent to PostList
+      isNavigatingBack.current = true;
       setMobilePanel("postList");
       setSelectedPostId(null);
       setAnnouncement(`Back to ${selectedCategory} posts`);
+      // Reset flag after state updates
+      setTimeout(() => {
+        isNavigatingBack.current = false;
+      }, 0);
     } else if (mobilePanel === "postList") {
+      // Go back from PostList to Navigation
+      isNavigatingBack.current = true;
       setMobilePanel("navigation");
+      setSelectedCategory("Home");
+      setSelectedPostId(null);
       setAnnouncement("Back to navigation");
+      // Reset flag after state updates
+      setTimeout(() => {
+        isNavigatingBack.current = false;
+      }, 0);
     }
   }, [mobilePanel, selectedCategory]);
 
@@ -444,13 +513,18 @@ export default function BlogPage() {
       </div>
 
       {/* Mobile Header */}
-      <div className="flex items-center gap-2 border-b bg-background p-4 lg:hidden">
+      <div className="flex items-center gap-2 border-b bg-background p-4 lg:hidden min-w-0">
         {mobilePanel !== "navigation" && (
-          <Button variant="ghost" size="icon" onClick={handleMobileBack}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="flex-shrink-0"
+            onClick={handleMobileBack}
+          >
             <ArrowLeft className="h-5 w-5" />
           </Button>
         )}
-        <h1 className="flex-1 text-xl font-bold">
+        <h1 className="flex-1 text-xl font-bold truncate min-w-0">
           {mobilePanel === "navigation" && "My Blog"}
           {mobilePanel === "postList" && `${selectedCategory} Posts`}
           {mobilePanel === "postContent" && selectedPost?.title}
@@ -462,12 +536,14 @@ export default function BlogPage() {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-80 p-0">
-              <BlogNavigationSidebar
-                selectedCategory={selectedCategory}
-                onSelectCategory={handleSelectCategory}
-                categories={categories}
-              />
+            <SheetContent side="right" className="w-80 p-0 flex flex-col">
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <BlogNavigationSidebar
+                  selectedCategory={selectedCategory}
+                  onSelectCategory={handleSelectCategory}
+                  categories={categories}
+                />
+              </div>
             </SheetContent>
           </Sheet>
         )}
@@ -475,18 +551,20 @@ export default function BlogPage() {
 
       {/* Desktop Layout - Dynamic Columns */}
       <div
-        className={`hidden h-full lg:grid ${
+        className={`hidden h-full lg:grid overflow-hidden ${
           selectedCategory === "Home"
             ? "lg:grid-cols-[280px_1fr]"
             : "lg:grid-cols-[280px_400px_1fr]"
         }`}
       >
         {/* Left Panel - Navigation */}
-        <BlogNavigationSidebar
-          selectedCategory={selectedCategory}
-          onSelectCategory={handleSelectCategory}
-          categories={categories}
-        />
+        <div className="relative z-10 overflow-hidden">
+          <BlogNavigationSidebar
+            selectedCategory={selectedCategory}
+            onSelectCategory={handleSelectCategory}
+            categories={categories}
+          />
+        </div>
 
         {/* Middle Panel - Post List (hidden when Home is selected) */}
         {selectedCategory !== "Home" && (
