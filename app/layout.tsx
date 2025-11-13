@@ -1,3 +1,4 @@
+import { CommandPalette } from "@/components/CommandPalette";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ConvexClientProvider } from "@/components/providers/ConvexClientProvider";
 import { getDefaultMetadata } from "@/lib/metadata";
@@ -38,6 +39,7 @@ export default function RootLayout({
               <ErrorBoundary>
                 <main id="main-content">{children}</main>
                 <Toaster />
+                <CommandPalette />
               </ErrorBoundary>
             </ConvexClientProvider>
           </ClerkProvider>

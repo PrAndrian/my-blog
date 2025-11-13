@@ -1,6 +1,6 @@
 import { Id } from "@/convex/_generated/dataModel";
 import { Doc } from "@/convex/_generated/dataModel";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface UseKeyboardNavigationOptions {
   enabled: boolean;
@@ -29,8 +29,64 @@ export function useKeyboardNavigation({
   onCloseHelp,
   showKeyboardHelp = false,
 }: UseKeyboardNavigationOptions) {
+  const repeatTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const repeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isRepeatingRef = useRef(false);
+  const directionRef = useRef<"next" | "prev" | null>(null);
+
   useEffect(() => {
     if (!enabled) return;
+
+    const stopRepeat = () => {
+      if (repeatTimeoutRef.current) {
+        clearTimeout(repeatTimeoutRef.current);
+        repeatTimeoutRef.current = null;
+      }
+      if (repeatIntervalRef.current) {
+        clearInterval(repeatIntervalRef.current);
+        repeatIntervalRef.current = null;
+      }
+      isRepeatingRef.current = false;
+      directionRef.current = null;
+    };
+
+    const navigatePost = (direction: "next" | "prev") => {
+      if (selectedCategory === "Home" || !posts || posts.length === 0) {
+        return;
+      }
+
+      const currentIndex = selectedPostId
+        ? posts.findIndex((p) => p._id === selectedPostId)
+        : -1;
+
+      if (direction === "next") {
+        const nextIndex =
+          currentIndex < posts.length - 1 ? currentIndex + 1 : 0;
+        onSelectPost(posts[nextIndex]._id);
+      } else {
+        const prevIndex = currentIndex > 0 ? currentIndex - 1 : posts.length - 1;
+        onSelectPost(posts[prevIndex]._id);
+      }
+    };
+
+    const startRepeat = (direction: "next" | "prev") => {
+      if (isRepeatingRef.current && directionRef.current === direction) return;
+      
+      stopRepeat();
+      isRepeatingRef.current = true;
+      directionRef.current = direction;
+
+      // Initial delay before starting repeat
+      const initialDelay = 300;
+      // Repeat interval (how fast it repeats)
+      const repeatInterval = 100;
+
+      repeatTimeoutRef.current = setTimeout(() => {
+        repeatIntervalRef.current = setInterval(() => {
+          navigatePost(direction);
+        }, repeatInterval);
+      }, initialDelay);
+    };
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
@@ -72,18 +128,12 @@ export function useKeyboardNavigation({
         }
 
         e.preventDefault();
-        const currentIndex = selectedPostId
-          ? posts.findIndex((p) => p._id === selectedPostId)
-          : -1;
-
-        if (e.key === "j") {
-          const nextIndex =
-            currentIndex < posts.length - 1 ? currentIndex + 1 : 0;
-          onSelectPost(posts[nextIndex]._id);
-        } else {
-          const prevIndex =
-            currentIndex > 0 ? currentIndex - 1 : posts.length - 1;
-          onSelectPost(posts[prevIndex]._id);
+        
+        // Only handle initial press, ignore browser's native repeat
+        if (!e.repeat) {
+          const direction = e.key === "j" ? "next" : "prev";
+          navigatePost(direction);
+          startRepeat(direction);
         }
         return;
       }
@@ -94,22 +144,34 @@ export function useKeyboardNavigation({
         }
 
         e.preventDefault();
-        const currentIndex = selectedPostId
-          ? posts.findIndex((p) => p._id === selectedPostId)
-          : -1;
 
-        if (e.key === "ArrowDown") {
-          const nextIndex = currentIndex > 0 ? currentIndex - 1 : posts.length - 1;
-          onSelectPost(posts[nextIndex]._id);
-        } else {
-          const prevIndex = currentIndex < posts.length - 1 ? currentIndex + 1 : 0;
-          onSelectPost(posts[prevIndex]._id);
+        // Only handle initial press, ignore browser's native repeat
+        if (!e.repeat) {
+          const direction = e.key === "ArrowDown" ? "next" : "prev";
+          navigatePost(direction);
+          startRepeat(direction);
         }
       }
     };
 
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (
+        e.key === "j" ||
+        e.key === "k" ||
+        e.key === "ArrowDown" ||
+        e.key === "ArrowUp"
+      ) {
+        stopRepeat();
+      }
+    };
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      stopRepeat();
+    };
   }, [
     enabled,
     posts,

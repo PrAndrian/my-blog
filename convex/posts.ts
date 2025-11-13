@@ -30,6 +30,94 @@ export const getCategories = query({
 });
 
 /**
+ * Search posts by title, tags, category, author, or content
+ * Returns published posts matching the search query
+ */
+export const searchPosts = query({
+  args: { query: v.string() },
+  returns: v.array(
+    v.object({
+      _id: v.id("posts"),
+      _creationTime: v.number(),
+      title: v.string(),
+      author: v.string(),
+      authorName: v.optional(v.string()),
+      userId: v.optional(v.string()),
+      date: v.number(),
+      updatedAt: v.optional(v.number()),
+      category: v.string(),
+      tags: v.array(v.string()),
+      slug: v.string(),
+      featuredImageUrl: v.optional(v.string()),
+      status: v.optional(v.string()),
+    })
+  ),
+  handler: async (ctx, args) => {
+    // Get all published posts
+    const allPosts = await ctx.db
+      .query("posts")
+      .withIndex("by_date")
+      .collect();
+
+    // Filter to only published posts
+    const publishedPosts = allPosts.filter(
+      (post) =>
+        post.status === undefined ||
+        post.status === null ||
+        post.status === "published"
+    );
+
+    // If query is empty, return empty array
+    if (!args.query || args.query.trim().length === 0) {
+      return [];
+    }
+
+    const searchTerm = args.query.toLowerCase().trim();
+
+    // Search across multiple fields
+    const matchingPosts = publishedPosts.filter((post) => {
+      // Search in title
+      if (post.title.toLowerCase().includes(searchTerm)) {
+        return true;
+      }
+
+      // Search in author/authorName
+      if (
+        post.author.toLowerCase().includes(searchTerm) ||
+        (post.authorName && post.authorName.toLowerCase().includes(searchTerm))
+      ) {
+        return true;
+      }
+
+      // Search in category
+      if (post.category.toLowerCase().includes(searchTerm)) {
+        return true;
+      }
+
+      // Search in tags
+      if (post.tags.some((tag) => tag.toLowerCase().includes(searchTerm))) {
+        return true;
+      }
+
+      // Search in content (first 500 chars for performance)
+      if (
+        post.content.toLowerCase().substring(0, 500).includes(searchTerm)
+      ) {
+        return true;
+      }
+
+      return false;
+    });
+
+    // Sort by date descending (newest first)
+    // Remove content field from results to match validator
+    return matchingPosts
+      .sort((a, b) => b.date - a.date)
+      .map(({ content, ...post }) => post);
+  },
+});
+
+/**
  * Get posts filtered by category, ordered by date (newest first)
  * Only returns published posts (for backward compatibility, posts without status are treated as published)
  */

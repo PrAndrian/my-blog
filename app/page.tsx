@@ -12,8 +12,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { useAnnouncement } from "@/hooks/useAnnouncement";
 import { useBlogNavigation } from "@/hooks/useBlogNavigation";
 import { useFocusManagement } from "@/hooks/useFocusManagement";
@@ -22,32 +29,61 @@ import { useMobilePanelAnimation } from "@/hooks/useMobilePanelAnimation";
 import { useUrlSync } from "@/hooks/useUrlSync";
 import { useQuery } from "convex/react";
 import { ArrowLeft, HelpCircle, Keyboard, Menu } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [announcement, setAnnouncement] = useState<string>("");
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
 
   const categories = useQuery(api.posts.getCategories) ?? [];
 
+  // Read initial category and post from URL params
+  const initialCategoryFromUrl = searchParams.get("category") || "Home";
+  const initialPostIdFromUrl = searchParams.get("post") as Id<"posts"> | null;
+
   const navigation = useBlogNavigation({
     posts: undefined,
     onAnnouncement: setAnnouncement,
+    initialCategory: initialCategoryFromUrl,
   });
 
-  const posts =
-    useQuery(
-      api.posts.getPostsByCategory,
-      navigation.selectedCategory !== "Home"
-        ? { category: navigation.selectedCategory }
-        : "skip"
-    ) ?? [];
+  const postsQuery = useQuery(
+    api.posts.getPostsByCategory,
+    navigation.selectedCategory !== "Home"
+      ? { category: navigation.selectedCategory }
+      : "skip"
+  );
+
+  const posts = postsQuery ?? [];
+  const isPostsLoading = postsQuery === undefined;
 
   const navigationWithPosts = useBlogNavigation({
     posts,
     onAnnouncement: setAnnouncement,
-    initialCategory: navigation.selectedCategory,
+    initialCategory: initialCategoryFromUrl,
   });
+
+  // Set initial post ID from URL if present (wait for posts to load)
+  const hasSetInitialPost = useRef(false);
+  useEffect(() => {
+    if (
+      initialPostIdFromUrl &&
+      !hasSetInitialPost.current &&
+      !navigationWithPosts.selectedPostId &&
+      posts.length > 0
+    ) {
+      // Verify the post exists in the loaded posts
+      const postExists = posts.some((p) => p._id === initialPostIdFromUrl);
+      if (postExists) {
+        navigationWithPosts.setSelectedPostId(initialPostIdFromUrl);
+        navigationWithPosts.setMobilePanel("postContent");
+        hasSetInitialPost.current = true;
+      }
+    }
+  }, [initialPostIdFromUrl, posts.length, navigationWithPosts.selectedPostId]);
 
   useEffect(() => {
     if (navigation.selectedCategory !== navigationWithPosts.selectedCategory) {
@@ -217,6 +253,9 @@ export default function Home() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-80 p-0 flex flex-col">
+            <SheetHeader className="sr-only">
+              <SheetTitle>Navigation Menu</SheetTitle>
+            </SheetHeader>
             <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
               <BlogNavigationSidebar
                 selectedCategory={finalNavigation.selectedCategory}
@@ -240,12 +279,19 @@ export default function Home() {
             selectedCategory={finalNavigation.selectedCategory}
             onSelectCategory={finalNavigation.handleSelectCategory}
             categories={categories}
+            onSelectPost={(postId, category) => {
+              // Navigate to the post with category and post ID in URL
+              const url = `/?category=${encodeURIComponent(
+                category
+              )}&post=${postId}`;
+              router.push(url);
+            }}
           />
         </div>
 
         {finalNavigation.selectedCategory !== "Home" && (
           <PostList
-            posts={posts}
+            posts={postsQuery}
             selectedPostId={finalNavigation.selectedPostId}
             onSelectPost={finalNavigation.handleSelectPost}
             category={finalNavigation.selectedCategory}
@@ -253,7 +299,14 @@ export default function Home() {
         )}
 
         {finalNavigation.selectedCategory !== "Home" ? (
-          <PostContent post={finalNavigation.selectedPost} />
+          <PostContent
+            post={finalNavigation.selectedPost}
+            isLoading={
+              finalNavigation.selectedPostId !== null
+                ? finalNavigation.selectedPost === null
+                : false
+            }
+          />
         ) : (
           <div className="flex h-full items-center justify-center bg-background">
             <div className="max-w-2xl p-8 text-center">
@@ -273,7 +326,7 @@ export default function Home() {
         >
           {finalNavigation.selectedCategory !== "Home" && (
             <PostList
-              posts={posts}
+              posts={postsQuery}
               selectedPostId={finalNavigation.selectedPostId}
               onSelectPost={finalNavigation.handleSelectPost}
               category={finalNavigation.selectedCategory}
@@ -301,7 +354,14 @@ export default function Home() {
           ref={postContentPanelRef}
           className="absolute inset-0 opacity-0 pointer-events-none"
         >
-          <PostContent post={finalNavigation.selectedPost} />
+          <PostContent
+            post={finalNavigation.selectedPost}
+            isLoading={
+              finalNavigation.selectedPostId !== null
+                ? finalNavigation.selectedPost === null
+                : false
+            }
+          />
         </div>
       </div>
     </div>

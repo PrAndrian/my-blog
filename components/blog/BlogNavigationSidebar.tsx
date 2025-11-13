@@ -22,12 +22,9 @@ import { useQuery } from "convex/react";
 import {
   BookOpen,
   Briefcase,
-  FileEdit,
   FileText,
   Home,
-  PlusCircle,
   Search,
-  Shield,
   ShoppingBag,
   Sparkles,
 } from "lucide-react";
@@ -35,11 +32,14 @@ import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { SearchModal } from "./SearchModal";
+import { Button } from "@/components/ui/button";
 
 interface BlogNavigationSidebarProps {
   selectedCategory: string;
   onSelectCategory: (category: string) => void;
   categories: string[];
+  onSelectPost?: (postId: string, category: string) => void;
 }
 
 // Icon mapping for categories
@@ -57,12 +57,11 @@ export function BlogNavigationSidebar({
   selectedCategory,
   onSelectCategory,
   categories,
+  onSelectPost,
 }: BlogNavigationSidebarProps) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const isAuthor = useQuery(api.users.isAuthor);
-  const isAdmin = useQuery(api.users.isAdmin);
-  const canPerformAuthorActions = useQuery(api.users.canPerformAuthorActions);
+  const [searchOpen, setSearchOpen] = useState(false);
   const categoryButtonsRef = useRef<Map<string, HTMLButtonElement>>(new Map());
 
   useEffect(() => {
@@ -114,6 +113,19 @@ export function BlogNavigationSidebar({
         <SidebarContent className="flex-1 min-h-0">
           <ScrollArea className="h-full">
             <div className="space-y-1 px-2 py-4">
+              {/* Search Bar */}
+              <div className="px-2 mb-4">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-muted-foreground"
+                  onClick={() => setSearchOpen(true)}
+                >
+                  <Search className="mr-2 h-4 w-4" />
+                  <span>Search posts...</span>
+                </Button>
+              </div>
+
+              <SidebarSeparator className="mb-4" />
               {/* Home button */}
               <SidebarGroup>
                 <SidebarGroupContent>
@@ -146,77 +158,6 @@ export function BlogNavigationSidebar({
               </SidebarGroup>
 
               <SidebarSeparator />
-
-              {/* Author section - visible to admins and approved authors */}
-              {canPerformAuthorActions && (
-                <>
-                  <SidebarGroup>
-                    <SidebarGroupLabel className="px-2 text-sm font-semibold tracking-tight text-muted-foreground">
-                      Author
-                    </SidebarGroupLabel>
-                    <SidebarGroupContent>
-                      <SidebarMenu>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            asChild
-                            className="w-full justify-start hover:!bg-accent hover:!text-accent-foreground !bg-transparent"
-                          >
-                            <Link href="/my-posts" aria-label="View my posts">
-                              <FileEdit className="mr-2 h-4 w-4" />
-                              <span>My Posts</span>
-                            </Link>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            asChild
-                            className="w-full justify-start hover:!bg-accent hover:!text-accent-foreground !bg-transparent"
-                          >
-                            <Link
-                              href="/create-post"
-                              aria-label="Create a new post"
-                            >
-                              <PlusCircle className="mr-2 h-4 w-4" />
-                              <span>Create Post</span>
-                            </Link>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      </SidebarMenu>
-                    </SidebarGroupContent>
-                  </SidebarGroup>
-                  <SidebarSeparator />
-                </>
-              )}
-
-              {/* Admin section - only visible to admins */}
-              {isAdmin && (
-                <>
-                  <SidebarGroup>
-                    <SidebarGroupLabel className="px-2 text-sm font-semibold tracking-tight text-muted-foreground">
-                      Admin
-                    </SidebarGroupLabel>
-                    <SidebarGroupContent>
-                      <SidebarMenu>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            asChild
-                            className="w-full justify-start hover:!bg-accent hover:!text-accent-foreground !bg-transparent"
-                          >
-                            <Link
-                              href="/admin"
-                              aria-label="Open admin dashboard"
-                            >
-                              <Shield className="mr-2 h-4 w-4" />
-                              <span>Admin Dashboard</span>
-                            </Link>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      </SidebarMenu>
-                    </SidebarGroupContent>
-                  </SidebarGroup>
-                  <SidebarSeparator />
-                </>
-              )}
 
               {/* Articles section */}
               <SidebarGroup>
@@ -268,6 +209,12 @@ export function BlogNavigationSidebar({
           </div>
         </SidebarFooter>
       </Sidebar>
+
+      <SearchModal
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        onSelectPost={onSelectPost}
+      />
     </SidebarProvider>
   );
 }

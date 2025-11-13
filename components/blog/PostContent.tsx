@@ -4,6 +4,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 import { ANIMATION } from "@/lib/constants";
@@ -13,18 +14,25 @@ import { useQuery } from "convex/react";
 import { gsap } from "gsap";
 import "highlight.js/styles/github.css";
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
+import { PostContentSkeleton } from "./PostContentSkeleton";
 
 interface PostContentProps {
   post: Doc<"posts"> | null;
+  isLoading?: boolean;
 }
 
-export function PostContent({ post }: PostContentProps) {
+export function PostContent({ post, isLoading }: PostContentProps) {
   const articleRef = useRef<HTMLElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const imageRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const skeletonRef = useRef<HTMLDivElement>(null);
 
   // Convert Convex storage ID to URL if needed
   const imageUrl = useQuery(
@@ -32,7 +40,57 @@ export function PostContent({ post }: PostContentProps) {
     post?.featuredImageUrl ? { storageId: post.featuredImageUrl } : "skip"
   );
 
-  // Animate content fade-in with GSAP
+  // Determine the actual image URL to display (calculate before early returns)
+  const displayImageUrl = post
+    ? getPostImageUrl(post.featuredImageUrl, imageUrl)
+    : null;
+
+  // Reset image loaded state when post or image URL changes
+  useEffect(() => {
+    setImageLoaded(false);
+  }, [post?._id, displayImageUrl]);
+
+  // Smooth transition from skeleton to image when image loads
+  useEffect(() => {
+    if (imageLoaded && skeletonRef.current && imageRef.current) {
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+
+      if (prefersReducedMotion) {
+        gsap.set(skeletonRef.current, { opacity: 0 });
+        gsap.set(imageRef.current, { opacity: 1 });
+        return;
+      }
+
+      const tl = gsap.timeline();
+
+      // Fade out skeleton
+      tl.to(skeletonRef.current, {
+        opacity: 0,
+        duration: ANIMATION.DURATION_SHORT,
+        ease: "power2.out",
+      });
+
+      // Fade in image
+      tl.to(
+        imageRef.current,
+        {
+          opacity: 1,
+          scale: 1,
+          duration: ANIMATION.DURATION_SHORT,
+          ease: "power2.out",
+        },
+        "-=0.1"
+      );
+
+      return () => {
+        tl.kill();
+      };
+    }
+  }, [imageLoaded]);
+
+  // Staggered animations for post content sections
   useEffect(() => {
     if (post && articleRef.current) {
       const prefersReducedMotion = window.matchMedia(
@@ -40,42 +98,106 @@ export function PostContent({ post }: PostContentProps) {
       ).matches;
 
       if (prefersReducedMotion) {
-        gsap.set(articleRef.current, { opacity: 1 });
+        const elementsToSet = [headerRef.current, contentRef.current];
+        if (imageRef.current && displayImageUrl) {
+          elementsToSet.push(imageRef.current);
+        }
+        if (skeletonRef.current && displayImageUrl && !imageLoaded) {
+          elementsToSet.push(skeletonRef.current);
+        }
+        gsap.set(elementsToSet, { opacity: 1, y: 0, scale: 1 });
         return;
       }
 
-      const animation = gsap.fromTo(
-        articleRef.current,
-        {
-          opacity: 0,
-          y: 20,
-        },
-        {
-          opacity: 1,
-          y: 0,
-          duration: ANIMATION.DURATION_MEDIUM,
-          ease: "power2.out",
+      const tl = gsap.timeline();
+
+      if (headerRef.current) {
+        tl.fromTo(
+          headerRef.current,
+          { opacity: 0, y: 30 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: ANIMATION.DURATION_MEDIUM,
+            ease: "power3.out",
+          }
+        );
+      }
+
+      if (displayImageUrl && imageRef.current) {
+        if (!imageLoaded && skeletonRef.current) {
+          // Animate skeleton if image not loaded yet
+          tl.fromTo(
+            skeletonRef.current,
+            { opacity: 0, scale: 0.95, y: 20 },
+            {
+              opacity: 1,
+              scale: 1,
+              y: 0,
+              duration: ANIMATION.DURATION_MEDIUM,
+              ease: "power3.out",
+            },
+            "-=0.15"
+          );
+        } else if (imageLoaded) {
+          // Animate actual image if loaded
+          tl.fromTo(
+            imageRef.current,
+            { opacity: 0, scale: 0.95, y: 20 },
+            {
+              opacity: 1,
+              scale: 1,
+              y: 0,
+              duration: ANIMATION.DURATION_MEDIUM,
+              ease: "power3.out",
+            },
+            "-=0.15"
+          );
         }
-      );
+      }
 
       return () => {
-        animation.kill();
+        tl.kill();
       };
     }
-  }, [post]);
+  }, [post, displayImageUrl]);
 
-  if (!post) {
-    return (
-      <div className="flex h-full items-center justify-center bg-background">
-        <div className="text-center">
-          <p className="text-lg text-muted-foreground">Select a post to read</p>
-        </div>
-      </div>
-    );
+  if (isLoading && !post) {
+    return <PostContentSkeleton />;
   }
 
-  // Determine the actual image URL to display
-  const displayImageUrl = getPostImageUrl(post.featuredImageUrl, imageUrl);
+  // Clean markdown content: remove empty code blocks (but preserve actual code blocks)
+  // Use a more careful approach that doesn't break code blocks
+  const cleanedContent = (() => {
+    if (!post?.content) return "";
+
+    let content = post.content;
+
+    // Protect code blocks first by temporarily replacing them
+    const codeBlockRegex = /```[\s\S]*?```/g;
+    const codeBlocks: string[] = [];
+    content = content.replace(codeBlockRegex, (match) => {
+      // Only remove if it's truly empty (just backticks and whitespace)
+      if (/^```\s*```$/.test(match.trim())) {
+        return "";
+      }
+      codeBlocks.push(match);
+      return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+    });
+
+    // Remove empty inline code (``) - but not inside code blocks
+    content = content.replace(/`\s*`/g, "");
+
+    // Normalize excessive newlines outside code blocks
+    content = content.replace(/\n{3,}/g, "\n\n");
+
+    // Restore code blocks
+    codeBlocks.forEach((block, index) => {
+      content = content.replace(`__CODE_BLOCK_${index}__`, block);
+    });
+
+    return content.trim();
+  })();
 
   return (
     <ScrollArea className="h-full bg-background overflow-x-hidden">
@@ -89,24 +211,24 @@ export function PostContent({ post }: PostContentProps) {
           style={{ maxWidth: "100%", width: "100%" }}
         >
           {/* Post header */}
-          <header className="mb-8">
+          <header ref={headerRef} className="mb-8">
             <h1 className="mb-4 text-4xl font-bold tracking-tight break-words text-foreground">
-              {post.title}
+              {post?.title}
             </h1>
 
             {/* Meta information */}
             <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-              <span>{formatDate(post.date)}</span>
+              <span>{formatDate(post?.date || 0)}</span>
               <span>•</span>
-              <span>{post.author}</span>
+              <span>{post?.author}</span>
               <span>•</span>
-              <Badge variant="secondary">{post.category}</Badge>
+              <Badge variant="secondary">{post?.category}</Badge>
             </div>
 
             {/* Tags */}
-            {post.tags && post.tags.length > 0 && (
+            {post?.tags && post?.tags.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-2">
-                {post.tags.map((tag, index) => (
+                {post?.tags.map((tag, index) => (
                   <Badge key={index} variant="outline" className="text-xs">
                     {tag}
                   </Badge>
@@ -119,28 +241,114 @@ export function PostContent({ post }: PostContentProps) {
 
           {/* Featured image */}
           {displayImageUrl && (
-            <div className="mb-8">
+            <div ref={imageRef} className="mb-8">
               <AspectRatio
                 ratio={16 / 9}
-                className="overflow-hidden rounded-lg"
+                className="overflow-hidden rounded-lg bg-muted relative"
               >
+                {!imageLoaded && (
+                  <div ref={skeletonRef} className="absolute inset-0">
+                    <Skeleton className="h-full w-full rounded-lg" />
+                  </div>
+                )}
                 <Image
                   src={displayImageUrl}
-                  alt={post.title}
+                  alt={post?.title || ""}
                   fill
                   className="object-cover"
+                  style={{ opacity: imageLoaded ? 1 : 0 }}
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 800px"
+                  onLoad={() => setImageLoaded(true)}
+                  onError={() => setImageLoaded(true)}
                 />
               </AspectRatio>
             </div>
           )}
 
           {/* Post content - Markdown rendered */}
-          <div className="prose prose-slate dark:prose-invert max-w-none md:max-w-none break-words w-full">
+          <div
+            ref={contentRef}
+            className="prose prose-slate dark:prose-invert max-w-none md:max-w-none break-words w-full"
+          >
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeRaw, rehypeHighlight]}
               components={{
+                code: ({ className, children, ...props }: any) => {
+                  // Check if code is empty (for filtering empty code blocks)
+                  const codeString = String(children || "").replace(/\n$/, "");
+
+                  if (!codeString.trim()) {
+                    return null;
+                  }
+
+                  // Preserve all props and className for syntax highlighting
+                  return (
+                    <code className={className} {...props}>
+                      {children}
+                    </code>
+                  );
+                },
+                pre: ({ children, ...props }: any) => {
+                  if (!children) return null;
+
+                  // Check if children contains a code element
+                  const child = Array.isArray(children)
+                    ? children[0]
+                    : children;
+
+                  // If child is a code element, check its content
+                  if (child && typeof child === "object" && "props" in child) {
+                    const codeElement = child.props?.children;
+                    const codeString =
+                      typeof codeElement === "string"
+                        ? codeElement
+                        : String(codeElement || "").replace(/\n$/, "");
+
+                    if (!codeString.trim()) {
+                      return null;
+                    }
+                  }
+
+                  // Preserve all props and structure for syntax highlighting
+                  // Add proper styling for code blocks
+                  return (
+                    <pre
+                      {...props}
+                      className="overflow-x-auto rounded-lg bg-muted p-4 my-4"
+                    >
+                      {children}
+                    </pre>
+                  );
+                },
+                p: ({ children }: any) => {
+                  if (!children) return null;
+
+                  const childrenArray = Array.isArray(children)
+                    ? children
+                    : [children];
+                  const hasOnlyEmptyCode = childrenArray.every((child: any) => {
+                    if (typeof child === "string") {
+                      return !child.trim() || /^`+\s*`+$/.test(child.trim());
+                    }
+                    if (
+                      child?.type === "code" ||
+                      child?.props?.className?.includes("language-")
+                    ) {
+                      const codeContent = String(
+                        child?.props?.children || ""
+                      ).trim();
+                      return !codeContent;
+                    }
+                    return false;
+                  });
+
+                  if (hasOnlyEmptyCode) {
+                    return null;
+                  }
+
+                  return <p>{children}</p>;
+                },
                 table: ({ children }) => (
                   <div className="overflow-x-auto my-4">
                     <table className="w-full border-collapse">{children}</table>
@@ -157,6 +365,17 @@ export function PostContent({ post }: PostContentProps) {
                 td: ({ children }) => (
                   <td className="border border-border px-4 py-2">{children}</td>
                 ),
+                button: ({ children, onClick, ...props }: any) => {
+                  // Filter out onClick if it's not a function (from raw HTML)
+                  const safeProps = { ...props };
+                  if (typeof onClick === "function") {
+                    safeProps.onClick = onClick;
+                  } else if (onClick) {
+                    // Remove onClick if it's a string
+                    delete safeProps.onClick;
+                  }
+                  return <button {...safeProps}>{children}</button>;
+                },
                 img: ({ src, alt }) => {
                   if (!src || typeof src !== "string") return null;
                   // Use regular img for data URLs or if src is not a valid URL
@@ -200,7 +419,7 @@ export function PostContent({ post }: PostContentProps) {
                 },
               }}
             >
-              {post.content}
+              {cleanedContent}
             </ReactMarkdown>
           </div>
         </article>
