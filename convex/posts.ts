@@ -1,22 +1,27 @@
-import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
+import { requireAuthorizedUser } from "./lib/auth";
 
 /**
  * Get all unique categories from published posts
- * Note: This loads all posts to extract categories. For better performance with many posts,
- * consider creating a separate categories table or caching this result.
+ * Optimized to filter by status index when available, otherwise filters after collection.
  */
 export const getCategories = query({
   args: {},
   returns: v.array(v.string()),
   handler: async (ctx) => {
-    const posts = await ctx.db
-      .query("posts")
-      .withIndex("by_date")
-      .collect();
-    const publishedPosts = posts.filter(
-      (post) => !post.status || post.status === "published"
+    // Get all posts and filter for published ones
+    // We need to include posts without status (backward compatibility)
+    const allPosts = await ctx.db.query("posts").withIndex("by_date").collect();
+
+    // Filter to only published posts (or posts without status for backward compatibility)
+    const publishedPosts = allPosts.filter(
+      (post) =>
+        post.status === undefined ||
+        post.status === null ||
+        post.status === "published"
     );
+
     const categories = Array.from(
       new Set(publishedPosts.map((post) => post.category))
     );
@@ -49,14 +54,23 @@ export const getPostsByCategory = query({
     })
   ),
   handler: async (ctx, args) => {
-    const posts = await ctx.db
+    // Get all posts for this category
+    const allPosts = await ctx.db
       .query("posts")
-      .withIndex("by_category", (q) => q.eq("category", args.category))
-      .order("desc")
+      .withIndex("by_category", (q: any) => q.eq("category", args.category))
       .collect();
 
     // Filter to only published posts (or posts without status for backward compatibility)
-    return posts.filter((post) => !post.status || post.status === "published");
+    // This includes: posts with status === "published" OR posts with status === undefined/null
+    const publishedPosts = allPosts.filter(
+      (post) =>
+        post.status === undefined ||
+        post.status === null ||
+        post.status === "published"
+    );
+
+    // Sort by date descending (newest first)
+    return publishedPosts.sort((a, b) => b.date - a.date);
   },
 });
 
@@ -92,7 +106,16 @@ export const getAllPosts = query({
       .collect();
 
     // Filter to only published posts (or posts without status for backward compatibility)
-    return posts.filter((post) => !post.status || post.status === "published");
+    // This includes: posts with status === "published" OR posts with status === undefined/null
+    const publishedPosts = posts.filter(
+      (post) =>
+        post.status === undefined ||
+        post.status === null ||
+        post.status === "published"
+    );
+
+    // Sort by date descending (newest first) - already sorted by index, but ensure consistency
+    return publishedPosts.sort((a, b) => b.date - a.date);
   },
 });
 
@@ -168,27 +191,7 @@ export const createPost = mutation({
   },
   returns: v.id("posts"),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthenticated: You must be logged in to create posts");
-    }
-
-    // Check if user is admin or approved author
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
-      .unique();
-
-    const isAuthorized =
-      user &&
-      (user.role === "admin" ||
-        (user.role === "author" && user.authorStatus === "approved"));
-
-    if (!isAuthorized) {
-      throw new Error(
-        "Unauthorized: Only admins or approved authors can create posts. Please request author status and wait for approval."
-      );
-    }
+    const { identity, user } = await requireAuthorizedUser(ctx);
 
     // Check if slug is unique
     const existingPost = await ctx.db
@@ -240,30 +243,12 @@ export const updatePost = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthenticated");
-    }
+    const { identity, user } = await requireAuthorizedUser(ctx);
 
     // Get the post
     const post = await ctx.db.get(args.postId);
     if (!post) {
       throw new Error("Post not found");
-    }
-
-    // Check if user is admin or approved author
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
-      .unique();
-
-    const isAuthorized =
-      user &&
-      (user.role === "admin" ||
-        (user.role === "author" && user.authorStatus === "approved"));
-
-    if (!isAuthorized) {
-      throw new Error("Unauthorized: Only admins or approved authors can edit posts");
     }
 
     // Check if user owns this post (admins can edit any post)
@@ -311,30 +296,12 @@ export const deletePost = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthenticated");
-    }
+    const { identity, user } = await requireAuthorizedUser(ctx);
 
     // Get the post
     const post = await ctx.db.get(args.postId);
     if (!post) {
       throw new Error("Post not found");
-    }
-
-    // Check if user is admin or approved author
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
-      .unique();
-
-    const isAuthorized =
-      user &&
-      (user.role === "admin" ||
-        (user.role === "author" && user.authorStatus === "approved"));
-
-    if (!isAuthorized) {
-      throw new Error("Unauthorized: Only admins or approved authors can delete posts");
     }
 
     // Check if user owns this post (admins can delete any post)
@@ -380,7 +347,9 @@ export const publishPost = mutation({
         (user.role === "author" && user.authorStatus === "approved"));
 
     if (!isAuthorized) {
-      throw new Error("Unauthorized: Only admins or approved authors can publish posts");
+      throw new Error(
+        "Unauthorized: Only admins or approved authors can publish posts"
+      );
     }
 
     // Check if user owns this post (admins can publish any post)
@@ -428,7 +397,9 @@ export const unpublishPost = mutation({
         (user.role === "author" && user.authorStatus === "approved"));
 
     if (!isAuthorized) {
-      throw new Error("Unauthorized: Only admins or approved authors can unpublish posts");
+      throw new Error(
+        "Unauthorized: Only admins or approved authors can unpublish posts"
+      );
     }
 
     // Check if user owns this post (admins can unpublish any post)

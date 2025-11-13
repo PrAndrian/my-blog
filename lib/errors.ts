@@ -1,3 +1,14 @@
+export const ERROR_CODES = {
+  UNAUTHENTICATED: "UNAUTHENTICATED",
+  UNAUTHORIZED: "UNAUTHORIZED",
+  SLUG_TAKEN: "SLUG_TAKEN",
+  POST_NOT_FOUND: "POST_NOT_FOUND",
+  VALIDATION_ERROR: "VALIDATION_ERROR",
+  UNEXPECTED_ERROR: "UNEXPECTED_ERROR",
+} as const;
+
+export type ErrorCode = typeof ERROR_CODES[keyof typeof ERROR_CODES];
+
 export interface ErrorContext {
   [key: string]: unknown;
 }
@@ -26,7 +37,7 @@ export const handleMutationError = (error: unknown): string => {
 export class AppError extends Error {
   constructor(
     message: string,
-    public code?: string,
+    public code?: ErrorCode,
     public statusCode?: number
   ) {
     super(message);

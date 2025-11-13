@@ -9,6 +9,7 @@
  */
 
 import type * as files from "../files.js";
+import type * as lib_auth from "../lib/auth.js";
 import type * as posts from "../posts.js";
 import type * as users from "../users.js";
 
@@ -28,6 +29,7 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   files: typeof files;
+  "lib/auth": typeof lib_auth;
   posts: typeof posts;
   users: typeof users;
 }>;

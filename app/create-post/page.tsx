@@ -53,30 +53,24 @@ function CreatePostContent() {
   };
 
   return (
-    <div className="container max-w-4xl mx-auto py-8 px-4">
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-4">
-          <Link href="/my-posts">
-            <Button variant="ghost" size="sm" aria-label="Go back to my posts">
-              <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
-              Back to My Posts
-            </Button>
-          </Link>
-          <Link href="/">
-            <Button variant="ghost" size="sm" aria-label="Go to blog platform">
-              <BookOpen className="w-4 h-4 mr-2" aria-hidden="true" />
-              View Blog
-            </Button>
-          </Link>
-        </div>
-        <h1 className="text-3xl font-bold">Create New Post</h1>
-        <p className="text-muted-foreground mt-2">
-          Write your content in Markdown format. You can save as a draft or
-          publish immediately.
-        </p>
+    <div className="h-screen flex flex-col">
+      <div className="flex items-center gap-2 p-4 border-b">
+        <Link href="/my-posts">
+          <Button variant="ghost" size="sm" aria-label="Go back to my posts">
+            <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
+            Back
+          </Button>
+        </Link>
+        <Link href="/">
+          <Button variant="ghost" size="sm" aria-label="Go to blog platform">
+            <BookOpen className="w-4 h-4 mr-2" aria-hidden="true" />
+            View Blog
+          </Button>
+        </Link>
       </div>
-
-      <PostForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+      <div className="flex-1 overflow-hidden">
+        <PostForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+      </div>
     </div>
   );
 }

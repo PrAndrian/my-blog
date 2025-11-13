@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useRouter, useParams } from "next/navigation";
 import { useState } from "react";
-import { PostForm, PostFormData } from "@/components/editor/PostForm";
+import { PostForm, PostFormData, CATEGORIES } from "@/components/editor/PostForm";
 import { RequireAuthor } from "@/components/auth/RequireAuthor";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, BookOpen, Loader2 } from "lucide-react";
@@ -63,16 +63,14 @@ function EditPostContent() {
   // Loading state
   if (post === undefined) {
     return (
-      <div className="container max-w-4xl mx-auto py-8 px-4">
-        <div className="mb-8">
-          <Skeleton className="h-10 w-32 mb-4" />
-          <Skeleton className="h-8 w-48 mb-2" />
-          <Skeleton className="h-4 w-96" />
+      <div className="h-screen flex flex-col">
+        <div className="flex items-center gap-2 p-4 border-b">
+          <Skeleton className="h-9 w-20" />
+          <Skeleton className="h-9 w-24" />
         </div>
-        <div className="space-y-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-64 w-full" />
-          <Skeleton className="h-10 w-full" />
+        <div className="flex-1 p-4">
+          <Skeleton className="h-12 w-full mb-4" />
+          <Skeleton className="h-full w-full" />
         </div>
       </div>
     );
@@ -81,7 +79,7 @@ function EditPostContent() {
   // Post not found or user doesn't have access
   if (post === null) {
     return (
-      <div className="container max-w-4xl mx-auto py-8 px-4">
+      <div className="h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
           <h1 className="text-2xl font-bold">Post Not Found</h1>
           <p className="text-muted-foreground">
@@ -97,43 +95,37 @@ function EditPostContent() {
   }
 
   return (
-    <div className="container max-w-4xl mx-auto py-8 px-4">
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-4">
-          <Link href="/my-posts">
-            <Button variant="ghost" size="sm" aria-label="Go back to my posts">
-              <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
-              Back to My Posts
-            </Button>
-          </Link>
-          <Link href="/">
-            <Button variant="ghost" size="sm" aria-label="Go to blog platform">
-              <BookOpen className="w-4 h-4 mr-2" aria-hidden="true" />
-              View Blog
-            </Button>
-          </Link>
-        </div>
-        <h1 className="text-3xl font-bold">Edit Post</h1>
-        <p className="text-muted-foreground mt-2">
-          Make changes to your post. You can save as a draft or publish your
-          changes.
-        </p>
+    <div className="h-screen flex flex-col">
+      <div className="flex items-center gap-2 p-4 border-b">
+        <Link href="/my-posts">
+          <Button variant="ghost" size="sm" aria-label="Go back to my posts">
+            <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
+            Back
+          </Button>
+        </Link>
+        <Link href="/">
+          <Button variant="ghost" size="sm" aria-label="Go to blog platform">
+            <BookOpen className="w-4 h-4 mr-2" aria-hidden="true" />
+            View Blog
+          </Button>
+        </Link>
       </div>
-
-      <PostForm
-        initialData={{
-          title: post.title,
-          content: post.content,
-          category: post.category as typeof CATEGORIES[number],
-          tags: post.tags,
-          slug: post.slug,
-          featuredImageUrl: post.featuredImageUrl,
-          status: (post.status as "draft" | "published") || "published",
-        }}
-        postId={postId}
-        onSubmit={handleSubmit}
-        isSubmitting={isSubmitting}
-      />
+      <div className="flex-1 overflow-hidden">
+        <PostForm
+          initialData={{
+            title: post.title,
+            content: post.content,
+            category: post.category as typeof CATEGORIES[number],
+            tags: post.tags,
+            slug: post.slug,
+            featuredImageUrl: post.featuredImageUrl,
+            status: (post.status as "draft" | "published") || "published",
+          }}
+          postId={postId}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+        />
+      </div>
     </div>
   );
 }

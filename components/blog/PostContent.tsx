@@ -6,16 +6,18 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
-import { useQuery } from "convex/react";
 import { ANIMATION } from "@/lib/constants";
+import { getPostImageUrl } from "@/lib/postUtils";
 import { formatDate } from "@/lib/utils";
+import { useQuery } from "convex/react";
 import { gsap } from "gsap";
+import "highlight.js/styles/github.css";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
+import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
-import "highlight.js/styles/github.css";
 
 interface PostContentProps {
   post: Doc<"posts"> | null;
@@ -72,11 +74,8 @@ export function PostContent({ post }: PostContentProps) {
     );
   }
 
-
   // Determine the actual image URL to display
-  const displayImageUrl = post.featuredImageUrl?.startsWith("http")
-    ? post.featuredImageUrl // It's already a full URL
-    : imageUrl; // It's a storage ID, use the converted URL
+  const displayImageUrl = getPostImageUrl(post.featuredImageUrl, imageUrl);
 
   return (
     <ScrollArea className="h-full bg-background overflow-x-hidden">
@@ -140,10 +139,26 @@ export function PostContent({ post }: PostContentProps) {
           <div className="prose prose-slate dark:prose-invert max-w-none md:max-w-none break-words w-full">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeHighlight]}
+              rehypePlugins={[rehypeRaw, rehypeHighlight]}
               components={{
+                table: ({ children }) => (
+                  <div className="overflow-x-auto my-4">
+                    <table className="w-full border-collapse">{children}</table>
+                  </div>
+                ),
+                thead: ({ children }) => <thead>{children}</thead>,
+                tbody: ({ children }) => <tbody>{children}</tbody>,
+                tr: ({ children }) => <tr>{children}</tr>,
+                th: ({ children }) => (
+                  <th className="border border-border px-4 py-2 text-left font-semibold bg-muted">
+                    {children}
+                  </th>
+                ),
+                td: ({ children }) => (
+                  <td className="border border-border px-4 py-2">{children}</td>
+                ),
                 img: ({ src, alt }) => {
-                  if (!src) return null;
+                  if (!src || typeof src !== "string") return null;
                   // Use regular img for data URLs or if src is not a valid URL
                   const isDataUrl = src.startsWith("data:");
                   const isValidUrl =

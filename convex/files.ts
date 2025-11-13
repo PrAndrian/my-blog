@@ -1,6 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
+import { mutation, query } from "./_generated/server";
 
 const FILE_UPLOAD = {
   MAX_SIZE_MB: 10,
@@ -35,21 +35,6 @@ export const generateUploadUrl = mutation({
     if (!isAuthorized) {
       throw new Error(
         "Unauthorized: Only admins or approved authors can upload files. Please request author status and wait for approval."
-      );
-    }
-
-    if (args.fileSize && args.fileSize > FILE_UPLOAD.MAX_SIZE_BYTES) {
-      throw new Error(
-        `File size exceeds maximum allowed size of ${FILE_UPLOAD.MAX_SIZE_MB}MB`
-      );
-    }
-
-    if (
-      args.contentType &&
-      !FILE_UPLOAD.ALLOWED_TYPES.includes(args.contentType)
-    ) {
-      throw new Error(
-        `File type not allowed. Allowed types: ${FILE_UPLOAD.ALLOWED_TYPES.join(", ")}`
       );
     }
 
@@ -115,7 +100,9 @@ export const deleteFile = mutation({
         (user.role === "author" && user.authorStatus === "approved"));
 
     if (!isAuthorized) {
-      throw new Error("Unauthorized: Only admins or approved authors can delete files");
+      throw new Error(
+        "Unauthorized: Only admins or approved authors can delete files"
+      );
     }
 
     if (user.role !== "admin") {

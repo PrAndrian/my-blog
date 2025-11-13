@@ -20,14 +20,15 @@ export default defineSchema(
       tags: v.array(v.string()),
       featuredImageUrl: v.optional(v.string()), // URL or Convex storage ID
       slug: v.string(),
-      status: v.optional(v.string()), // "draft" or "published" (default to "published" for backward compatibility)
+      status: v.optional(v.union(v.literal("draft"), v.literal("published"))), // "draft" or "published" (default to "published" for backward compatibility)
     })
       .index("by_category", ["category"])
       .index("by_slug", ["slug"])
       .index("by_date", ["date"])
       .index("by_userId", ["userId"])
       .index("by_status", ["status"])
-      .index("by_userId_and_status", ["userId", "status"]),
+      .index("by_userId_and_status", ["userId", "status"])
+      .index("by_category_and_status", ["category", "status"]),
     // Users table for role management
     users: defineTable({
       userId: v.string(), // Clerk user ID
