@@ -20,3 +20,18 @@ export const FILE_UPLOAD = {
   ALLOWED_TYPES: ["image/jpeg", "image/png", "image/webp", "image/gif"],
 } as const;
 
+// Category icon configuration
+// Maps category names to their corresponding Lucide icon names
+export const CATEGORY_ICONS = {
+  Home: "Home",
+  Productivity: "Sparkles",
+  AI: "Sparkles",
+  Career: "Briefcase",
+  "Job Search": "Search",
+  Gear: "ShoppingBag",
+  Templates: "FileText",
+} as const;
+
+// Default icon for categories without a specific icon
+export const DEFAULT_CATEGORY_ICON = "BookOpen" as const;
+

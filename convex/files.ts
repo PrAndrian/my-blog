@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 
-const FILE_UPLOAD = {
+export const FILE_UPLOAD = {
   MAX_SIZE_MB: 10,
   MAX_SIZE_BYTES: 10 * 1024 * 1024,
   ALLOWED_TYPES: ["image/jpeg", "image/png", "image/webp", "image/gif"],
@@ -12,11 +12,15 @@ const FILE_UPLOAD = {
  * Generate an upload URL for file storage
  * This URL can be used to upload files to Convex storage
  * Requires user to be authenticated and have author role
+ * Validates file size and type before allowing upload
  */
 export const generateUploadUrl = mutation({
-  args: {},
+  args: {
+    fileSize: v.number(),
+    fileType: v.string(),
+  },
   returns: v.string(),
-  handler: async (ctx) => {
+  handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Unauthenticated: You must be logged in to upload files");
@@ -35,6 +39,21 @@ export const generateUploadUrl = mutation({
     if (!isAuthorized) {
       throw new Error(
         "Unauthorized: Only admins or approved authors can upload files. Please request author status and wait for approval."
+      );
+    }
+
+    // Validate file size
+    if (args.fileSize > FILE_UPLOAD.MAX_SIZE_BYTES) {
+      throw new Error(
+        `File size exceeds maximum limit of ${FILE_UPLOAD.MAX_SIZE_MB}MB. Your file is ${(args.fileSize / (1024 * 1024)).toFixed(2)}MB.`
+      );
+    }
+
+    // Validate file type
+    const allowedTypes: readonly string[] = FILE_UPLOAD.ALLOWED_TYPES;
+    if (!allowedTypes.includes(args.fileType)) {
+      throw new Error(
+        `Invalid file type: ${args.fileType}. Allowed types: ${FILE_UPLOAD.ALLOWED_TYPES.join(", ")}`
       );
     }
 

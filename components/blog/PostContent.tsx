@@ -14,7 +14,7 @@ import { useQuery } from "convex/react";
 import { gsap } from "gsap";
 import "highlight.js/styles/github.css";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { isValidElement, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import rehypeRaw from "rehype-raw";
@@ -162,13 +162,10 @@ export function PostContent({ post, isLoading }: PostContentProps) {
     }
   }, [post, displayImageUrl]);
 
-  if (isLoading && !post) {
-    return <PostContentSkeleton />;
-  }
-
   // Clean markdown content: remove empty code blocks (but preserve actual code blocks)
-  // Use a more careful approach that doesn't break code blocks
-  const cleanedContent = (() => {
+  // Memoized to avoid expensive regex operations on every render
+  // MUST be called before any early returns to maintain consistent hook order
+  const cleanedContent = useMemo(() => {
     if (!post?.content) return "";
 
     let content = post.content;
@@ -197,7 +194,11 @@ export function PostContent({ post, isLoading }: PostContentProps) {
     });
 
     return content.trim();
-  })();
+  }, [post?.content]);
+
+  if (isLoading && !post) {
+    return <PostContentSkeleton />;
+  }
 
   return (
     <ScrollArea className="h-full bg-background overflow-x-hidden">
@@ -274,7 +275,11 @@ export function PostContent({ post, isLoading }: PostContentProps) {
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeRaw, rehypeHighlight]}
               components={{
-                code: ({ className, children, ...props }: any) => {
+                code: ({
+                  className,
+                  children,
+                  ...props
+                }: React.ComponentPropsWithoutRef<"code">) => {
                   // Check if code is empty (for filtering empty code blocks)
                   const codeString = String(children || "").replace(/\n$/, "");
 
@@ -289,7 +294,10 @@ export function PostContent({ post, isLoading }: PostContentProps) {
                     </code>
                   );
                 },
-                pre: ({ children, ...props }: any) => {
+                pre: ({
+                  children,
+                  ...props
+                }: React.ComponentPropsWithoutRef<"pre">) => {
                   if (!children) return null;
 
                   // Check if children contains a code element
@@ -321,27 +329,36 @@ export function PostContent({ post, isLoading }: PostContentProps) {
                     </pre>
                   );
                 },
-                p: ({ children }: any) => {
+                p: ({ children }: React.ComponentPropsWithoutRef<"p">) => {
                   if (!children) return null;
 
                   const childrenArray = Array.isArray(children)
                     ? children
                     : [children];
-                  const hasOnlyEmptyCode = childrenArray.every((child: any) => {
-                    if (typeof child === "string") {
-                      return !child.trim() || /^`+\s*`+$/.test(child.trim());
+                  const hasOnlyEmptyCode = childrenArray.every(
+                    (child: React.ReactNode) => {
+                      if (typeof child === "string") {
+                        return !child.trim() || /^`+\s*`+$/.test(child.trim());
+                      }
+                      if (isValidElement(child)) {
+                        const element = child as React.ReactElement<{
+                          className?: string;
+                          children?: React.ReactNode;
+                        }>;
+                        if (
+                          element.type === "code" ||
+                          (typeof element.props.className === "string" &&
+                            element.props.className.includes("language-"))
+                        ) {
+                          const codeContent = String(
+                            element.props.children || ""
+                          ).trim();
+                          return !codeContent;
+                        }
+                      }
+                      return false;
                     }
-                    if (
-                      child?.type === "code" ||
-                      child?.props?.className?.includes("language-")
-                    ) {
-                      const codeContent = String(
-                        child?.props?.children || ""
-                      ).trim();
-                      return !codeContent;
-                    }
-                    return false;
-                  });
+                  );
 
                   if (hasOnlyEmptyCode) {
                     return null;
@@ -365,16 +382,19 @@ export function PostContent({ post, isLoading }: PostContentProps) {
                 td: ({ children }) => (
                   <td className="border border-border px-4 py-2">{children}</td>
                 ),
-                button: ({ children, onClick, ...props }: any) => {
+                button: ({
+                  children,
+                  onClick,
+                  ...props
+                }: React.ComponentPropsWithoutRef<"button">) => {
                   // Filter out onClick if it's not a function (from raw HTML)
-                  const safeProps = { ...props };
-                  if (typeof onClick === "function") {
-                    safeProps.onClick = onClick;
-                  } else if (onClick) {
-                    // Remove onClick if it's a string
-                    delete safeProps.onClick;
-                  }
-                  return <button {...safeProps}>{children}</button>;
+                  // Only pass onClick if it's actually a function
+                  const buttonProps: React.ComponentPropsWithoutRef<"button"> =
+                    {
+                      ...props,
+                      ...(typeof onClick === "function" && { onClick }),
+                    };
+                  return <button {...buttonProps}>{children}</button>;
                 },
                 img: ({ src, alt }) => {
                   if (!src || typeof src !== "string") return null;

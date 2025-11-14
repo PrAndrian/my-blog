@@ -9,6 +9,7 @@ interface BlogPost {
   tags: string[];
   featuredImageUrl?: string;
   slug: string;
+  updatedAt?: number;
 }
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -77,10 +78,7 @@ export function getBlogPostStructuredData(post: BlogPost) {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     headline: post.title,
-    description: post.content
-      .replace(/[#*`]/g, "")
-      .substring(0, 160)
-      .trim(),
+    description: post.content.replace(/[#*`]/g, "").substring(0, 160).trim(),
     author: {
       "@type": "Person",
       name: post.authorName || "Unknown Author",
@@ -102,4 +100,3 @@ export function getBlogPostStructuredData(post: BlogPost) {
     keywords: post.tags.join(", "),
   };
 }
-

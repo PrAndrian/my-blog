@@ -17,6 +17,7 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { api } from "@/convex/_generated/api";
+import { CATEGORY_ICONS, DEFAULT_CATEGORY_ICON } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useQuery } from "convex/react";
 import {
@@ -27,6 +28,7 @@ import {
   Search,
   ShoppingBag,
   Sparkles,
+  LucideIcon,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
@@ -42,15 +44,22 @@ interface BlogNavigationSidebarProps {
   onSelectPost?: (postId: string, category: string) => void;
 }
 
-// Icon mapping for categories
-const categoryIcons: Record<string, React.ReactNode> = {
-  Home: <Home className="h-4 w-4" />,
-  Productivity: <Sparkles className="h-4 w-4" />,
-  AI: <Sparkles className="h-4 w-4" />,
-  Career: <Briefcase className="h-4 w-4" />,
-  "Job Search": <Search className="h-4 w-4" />,
-  Gear: <ShoppingBag className="h-4 w-4" />,
-  Templates: <FileText className="h-4 w-4" />,
+// Icon component mapping
+const iconComponents: Record<string, LucideIcon> = {
+  Home,
+  Sparkles,
+  Briefcase,
+  Search,
+  ShoppingBag,
+  FileText,
+  BookOpen,
+};
+
+// Helper to get the icon component for a category
+const getCategoryIcon = (category: string): React.ReactNode => {
+  const iconName = CATEGORY_ICONS[category as keyof typeof CATEGORY_ICONS] || DEFAULT_CATEGORY_ICON;
+  const IconComponent = iconComponents[iconName];
+  return IconComponent ? <IconComponent className="h-4 w-4" /> : <BookOpen className="h-4 w-4" />;
 };
 
 export function BlogNavigationSidebar({
@@ -188,9 +197,7 @@ export function BlogNavigationSidebar({
                           )}
                         >
                           <span className="mr-2">
-                            {categoryIcons[category] || (
-                              <BookOpen className="h-4 w-4" />
-                            )}
+                            {getCategoryIcon(category)}
                           </span>
                           <span>{category}</span>
                         </SidebarMenuButton>

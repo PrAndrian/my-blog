@@ -30,6 +30,12 @@ export function CommandPalette() {
   const canPerformAuthorActions = useQuery(api.users.canPerformAuthorActions);
 
   useEffect(() => {
+    if (!canPerformAuthorActions && open) {
+      setOpen(false);
+    }
+  }, [canPerformAuthorActions, open]);
+
+  useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
@@ -82,12 +88,8 @@ export function CommandPalette() {
     setOpen(false);
   };
 
-  if (!canPerformAuthorActions) {
-    return null;
-  }
-
   return (
-    <CommandDialog open={open} onOpenChange={setOpen}>
+    <CommandDialog open={open} onOpenChange={canPerformAuthorActions ? setOpen : () => {}}>
       <CommandInput placeholder="Type a command or search..." />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>

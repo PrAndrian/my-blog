@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireAuthorizedUser } from "./lib/auth";
+import { getPublishedPosts, getPublishedPostsByCategory } from "./lib/queries";
 
 /**
  * Get all unique categories from published posts
@@ -10,20 +11,21 @@ export const getCategories = query({
   args: {},
   returns: v.array(v.string()),
   handler: async (ctx) => {
-    // Get all posts and filter for published ones
-    // We need to include posts without status (backward compatibility)
-    const allPosts = await ctx.db.query("posts").withIndex("by_date").collect();
+    // Get published posts using efficient index query
+    // For backward compatibility, also get posts without status field
+    const publishedPosts = await getPublishedPosts(ctx);
 
-    // Filter to only published posts (or posts without status for backward compatibility)
-    const publishedPosts = allPosts.filter(
-      (post) =>
-        post.status === undefined ||
-        post.status === null ||
-        post.status === "published"
-    );
+    // Get posts without status (backward compatibility - should be minimal)
+    const legacyPosts = await ctx.db
+      .query("posts")
+      .filter((q) => q.eq(q.field("status"), undefined))
+      .collect();
+
+    // Combine both sets
+    const allPublishedPosts = [...publishedPosts, ...legacyPosts];
 
     const categories = Array.from(
-      new Set(publishedPosts.map((post) => post.category))
+      new Set(allPublishedPosts.map((post) => post.category))
     );
     return categories.sort();
   },
@@ -53,19 +55,17 @@ export const searchPosts = query({
     })
   ),
   handler: async (ctx, args) => {
-    // Get all published posts
-    const allPosts = await ctx.db
+    // Get published posts using efficient index query
+    const publishedPosts = await getPublishedPosts(ctx);
+
+    // Get posts without status (backward compatibility)
+    const legacyPosts = await ctx.db
       .query("posts")
-      .withIndex("by_date")
+      .filter((q) => q.eq(q.field("status"), undefined))
       .collect();
 
-    // Filter to only published posts
-    const publishedPosts = allPosts.filter(
-      (post) =>
-        post.status === undefined ||
-        post.status === null ||
-        post.status === "published"
-    );
+    // Combine both sets
+    const allPublishedPosts = [...publishedPosts, ...legacyPosts];
 
     // If query is empty, return empty array
     if (!args.query || args.query.trim().length === 0) {
@@ -75,7 +75,7 @@ export const searchPosts = query({
     const searchTerm = args.query.toLowerCase().trim();
 
     // Search across multiple fields
-    const matchingPosts = publishedPosts.filter((post) => {
+    const matchingPosts = allPublishedPosts.filter((post) => {
       // Search in title
       if (post.title.toLowerCase().includes(searchTerm)) {
         return true;
@@ -142,23 +142,21 @@ export const getPostsByCategory = query({
     })
   ),
   handler: async (ctx, args) => {
-    // Get all posts for this category
-    const allPosts = await ctx.db
+    // Use efficient compound index to get published posts by category
+    const publishedPosts = await getPublishedPostsByCategory(ctx, args.category);
+
+    // Get posts without status in this category (backward compatibility)
+    const legacyPosts = await ctx.db
       .query("posts")
-      .withIndex("by_category", (q: any) => q.eq("category", args.category))
+      .withIndex("by_category", (q) => q.eq("category", args.category))
+      .filter((q) => q.eq(q.field("status"), undefined))
       .collect();
 
-    // Filter to only published posts (or posts without status for backward compatibility)
-    // This includes: posts with status === "published" OR posts with status === undefined/null
-    const publishedPosts = allPosts.filter(
-      (post) =>
-        post.status === undefined ||
-        post.status === null ||
-        post.status === "published"
-    );
+    // Combine both sets
+    const allPosts = [...publishedPosts, ...legacyPosts];
 
     // Sort by date descending (newest first)
-    return publishedPosts.sort((a, b) => b.date - a.date);
+    return allPosts.sort((a, b) => b.date - a.date);
   },
 });
 
@@ -187,23 +185,18 @@ export const getAllPosts = query({
     })
   ),
   handler: async (ctx) => {
-    const posts = await ctx.db
+    // Get published posts using efficient index query
+    const publishedPosts = await getPublishedPosts(ctx);
+
+    // Get posts without status (backward compatibility)
+    const legacyPosts = await ctx.db
       .query("posts")
-      .withIndex("by_date")
-      .order("desc")
+      .filter((q) => q.eq(q.field("status"), undefined))
       .collect();
 
-    // Filter to only published posts (or posts without status for backward compatibility)
-    // This includes: posts with status === "published" OR posts with status === undefined/null
-    const publishedPosts = posts.filter(
-      (post) =>
-        post.status === undefined ||
-        post.status === null ||
-        post.status === "published"
-    );
-
-    // Sort by date descending (newest first) - already sorted by index, but ensure consistency
-    return publishedPosts.sort((a, b) => b.date - a.date);
+    // Combine both sets and sort
+    const allPosts = [...publishedPosts, ...legacyPosts];
+    return allPosts.sort((a, b) => b.date - a.date);
   },
 });
 

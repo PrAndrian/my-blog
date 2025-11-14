@@ -23,14 +23,23 @@ export function ImageUploader({ value, onChange, onRemove }: ImageUploaderProps)
   const generateUploadUrl = useMutation(api.files.generateUploadUrl);
 
   const handleFileUpload = async (file: File) => {
+    // Allowed types from Convex backend
+    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    const MAX_SIZE_MB = 10;
+    const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+
     if (!file.type.startsWith("image/")) {
       alert("Please upload an image file");
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      // 10MB limit
-      alert("Image size must be less than 10MB");
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      alert(`Invalid image type. Allowed types: JPEG, PNG, WebP, GIF`);
+      return;
+    }
+
+    if (file.size > MAX_SIZE_BYTES) {
+      alert(`Image size must be less than ${MAX_SIZE_MB}MB`);
       return;
     }
 
@@ -38,8 +47,11 @@ export function ImageUploader({ value, onChange, onRemove }: ImageUploaderProps)
     setUploadProgress(0);
 
     try {
-      // Get upload URL
-      const uploadUrl = await generateUploadUrl();
+      // Get upload URL with file validation
+      const uploadUrl = await generateUploadUrl({
+        fileSize: file.size,
+        fileType: file.type,
+      });
 
       // Upload file to Convex storage
       const result = await fetch(uploadUrl, {
