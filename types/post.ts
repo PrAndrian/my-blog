@@ -13,7 +13,7 @@ export const CATEGORIES = [
   "Personal",
 ] as const;
 
-export type PostCategory = typeof CATEGORIES[number];
+export type PostCategory = (typeof CATEGORIES)[number];
 
 export interface PostBase {
   title: string;
@@ -35,7 +35,5 @@ export interface Post extends PostBase {
   updatedAt?: number;
 }
 
-export interface PostFormData extends PostBase {
-  // Form-specific, no ID needed
-}
-
+// Type alias for form data - semantically equivalent to PostBase but used in form contexts
+export type PostFormData = PostBase;

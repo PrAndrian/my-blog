@@ -28,7 +28,7 @@ function CreatePostContent() {
   const handleSubmit = async (data: PostFormData, isDraft: boolean) => {
     setIsSubmitting(true);
     try {
-      const postId = await createPost({
+      const _postId = await createPost({
         title: data.title,
         content: data.content,
         category: data.category,

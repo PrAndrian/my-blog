@@ -16,7 +16,8 @@ export function useBlogNavigation({
   onAnnouncement,
   initialCategory = "Home",
 }: UseBlogNavigationOptions) {
-  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
+  const [selectedCategory, setSelectedCategory] =
+    useState<string>(initialCategory);
   const [selectedPostId, setSelectedPostId] = useState<Id<"posts"> | null>(
     null
   );
@@ -36,11 +37,13 @@ export function useBlogNavigation({
     isInitialMount.current = false;
   }, []);
 
+  // Sync selectedCategory with initialCategory changes
   useEffect(() => {
     if (initialCategory && initialCategory !== selectedCategory) {
       setSelectedCategory(initialCategory);
       previousCategoryRef.current = initialCategory;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialCategory]);
 
   const isMobile = useCallback(() => {
@@ -104,6 +107,7 @@ export function useBlogNavigation({
     }
   }, [selectedPostId, mobilePanel, selectedCategory]);
 
+  // Mobile panel management and auto-post selection effect
   useEffect(() => {
     if (isManualPostSelection.current || isNavigatingBack.current) {
       previousCategoryRef.current = selectedCategory;
@@ -154,6 +158,7 @@ export function useBlogNavigation({
     onAnnouncement,
   ]);
 
+  // Auto-select latest post when navigating to a category
   useEffect(() => {
     if (
       isMobile() ||
@@ -199,4 +204,3 @@ export function useBlogNavigation({
     handleMobileBack,
   };
 }
-

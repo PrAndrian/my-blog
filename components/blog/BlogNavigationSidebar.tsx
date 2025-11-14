@@ -16,10 +16,8 @@ import {
   SidebarProvider,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { api } from "@/convex/_generated/api";
 import { CATEGORY_ICONS, DEFAULT_CATEGORY_ICON } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { useQuery } from "convex/react";
 import {
   BookOpen,
   Briefcase,
@@ -32,7 +30,6 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { SearchModal } from "./SearchModal";
 import { Button } from "@/components/ui/button";
@@ -57,9 +54,15 @@ const iconComponents: Record<string, LucideIcon> = {
 
 // Helper to get the icon component for a category
 const getCategoryIcon = (category: string): React.ReactNode => {
-  const iconName = CATEGORY_ICONS[category as keyof typeof CATEGORY_ICONS] || DEFAULT_CATEGORY_ICON;
+  const iconName =
+    CATEGORY_ICONS[category as keyof typeof CATEGORY_ICONS] ||
+    DEFAULT_CATEGORY_ICON;
   const IconComponent = iconComponents[iconName];
-  return IconComponent ? <IconComponent className="h-4 w-4" /> : <BookOpen className="h-4 w-4" />;
+  return IconComponent ? (
+    <IconComponent className="h-4 w-4" />
+  ) : (
+    <BookOpen className="h-4 w-4" />
+  );
 };
 
 export function BlogNavigationSidebar({
@@ -73,7 +76,9 @@ export function BlogNavigationSidebar({
   const [searchOpen, setSearchOpen] = useState(false);
   const categoryButtonsRef = useRef<Map<string, HTMLButtonElement>>(new Map());
 
+  // Hydration-safe mounting pattern
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 

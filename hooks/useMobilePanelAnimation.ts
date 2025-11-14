@@ -73,7 +73,7 @@ export function useMobilePanelAnimation({
         pointerEvents: "auto",
       });
     }
-  }, []);
+  }, [mobilePanel, selectedCategory]);
 
   return {
     postListPanelRef,
@@ -81,4 +81,3 @@ export function useMobilePanelAnimation({
     postContentPanelRef,
   };
 }
-

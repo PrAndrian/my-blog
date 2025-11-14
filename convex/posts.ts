@@ -100,9 +100,7 @@ export const searchPosts = query({
       }
 
       // Search in content (first 500 chars for performance)
-      if (
-        post.content.toLowerCase().substring(0, 500).includes(searchTerm)
-      ) {
+      if (post.content.toLowerCase().substring(0, 500).includes(searchTerm)) {
         return true;
       }
 
@@ -113,7 +111,7 @@ export const searchPosts = query({
     // Remove content field from results to match validator
     return matchingPosts
       .sort((a, b) => b.date - a.date)
-      .map(({ content, ...post }) => post);
+      .map(({ content: _content, ...post }) => post);
   },
 });
 
@@ -143,7 +141,10 @@ export const getPostsByCategory = query({
   ),
   handler: async (ctx, args) => {
     // Use efficient compound index to get published posts by category
-    const publishedPosts = await getPublishedPostsByCategory(ctx, args.category);
+    const publishedPosts = await getPublishedPostsByCategory(
+      ctx,
+      args.category
+    );
 
     // Get posts without status in this category (backward compatibility)
     const legacyPosts = await ctx.db

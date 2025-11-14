@@ -29,11 +29,13 @@ export function CommandPalette() {
   const isAdmin = useQuery(api.users.isAdmin);
   const canPerformAuthorActions = useQuery(api.users.canPerformAuthorActions);
 
+  // Close dialog when user loses author permissions
   useEffect(() => {
-    if (!canPerformAuthorActions && open) {
+    if (!canPerformAuthorActions) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOpen(false);
     }
-  }, [canPerformAuthorActions, open]);
+  }, [canPerformAuthorActions]);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -89,7 +91,10 @@ export function CommandPalette() {
   };
 
   return (
-    <CommandDialog open={open} onOpenChange={canPerformAuthorActions ? setOpen : () => {}}>
+    <CommandDialog
+      open={open}
+      onOpenChange={canPerformAuthorActions ? setOpen : () => {}}
+    >
       <CommandInput placeholder="Type a command or search..." />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>

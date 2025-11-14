@@ -54,7 +54,7 @@ export const setUserRole = mutation({
 export const requestAuthorStatus = mutation({
   args: {},
   returns: v.id("users"),
-  handler: async (ctx, args) => {
+  handler: async (ctx, _args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Unauthenticated");
@@ -186,7 +186,7 @@ export const rejectAuthor = mutation({
 export const setMyselfAsAdmin = mutation({
   args: {},
   returns: v.null(),
-  handler: async (ctx, args) => {
+  handler: async (ctx, _args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Unauthenticated");
@@ -199,7 +199,9 @@ export const setMyselfAsAdmin = mutation({
       .collect();
 
     if (existingAdmins.length > 0) {
-      throw new Error("Admins already exist. Only the first admin can be set this way.");
+      throw new Error(
+        "Admins already exist. Only the first admin can be set this way."
+      );
     }
 
     // Get or create current user
@@ -260,7 +262,10 @@ export const setAdminRole = mutation({
       .collect();
 
     // Allow if no admins exist (initial setup) or if current user is admin
-    if (existingAdmins.length > 0 && (!adminUser || adminUser.role !== "admin")) {
+    if (
+      existingAdmins.length > 0 &&
+      (!adminUser || adminUser.role !== "admin")
+    ) {
       throw new Error("Unauthorized: Only admins can set admin role");
     }
 

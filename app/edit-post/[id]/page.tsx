@@ -4,10 +4,14 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useRouter, useParams } from "next/navigation";
 import { useState } from "react";
-import { PostForm, PostFormData, CATEGORIES } from "@/components/editor/PostForm";
+import {
+  PostForm,
+  PostFormData,
+  CATEGORIES,
+} from "@/components/editor/PostForm";
 import { RequireAuthor } from "@/components/auth/RequireAuthor";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, BookOpen, Loader2 } from "lucide-react";
+import { ArrowLeft, BookOpen } from "lucide-react";
 import Link from "next/link";
 import type { Id } from "@/convex/_generated/dataModel";
 import { showSuccess, showError } from "@/lib/toast";
@@ -115,7 +119,7 @@ function EditPostContent() {
           initialData={{
             title: post.title,
             content: post.content,
-            category: post.category as typeof CATEGORIES[number],
+            category: post.category as (typeof CATEGORIES)[number],
             tags: post.tags,
             slug: post.slug,
             featuredImageUrl: post.featuredImageUrl,

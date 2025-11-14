@@ -6,7 +6,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Loader2, CheckCircle, XCircle, Clock, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { showSuccess, showError } from "@/lib/toast";
 
 export default function SetupAuthorPage() {
@@ -17,7 +23,11 @@ export default function SetupAuthorPage() {
 
   useEffect(() => {
     // If user is already an approved author or admin, redirect to create post
-    if (userRole && (userRole.role === "admin" || (userRole.role === "author" && userRole.authorStatus === "approved"))) {
+    if (
+      userRole &&
+      (userRole.role === "admin" ||
+        (userRole.role === "author" && userRole.authorStatus === "approved"))
+    ) {
       router.push("/create-post");
     }
   }, [userRole, router]);
@@ -54,13 +64,14 @@ export default function SetupAuthorPage() {
               Request Author Access
             </CardTitle>
             <CardDescription>
-              Welcome! To create and publish blog posts, you'll need author access.
+              Welcome! To create and publish blog posts, you&apos;ll need author
+              access.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">
-                By requesting author access, you'll be able to:
+                By requesting author access, you&apos;ll be able to:
               </p>
               <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground ml-4">
                 <li>Create and publish blog posts</li>
@@ -71,7 +82,8 @@ export default function SetupAuthorPage() {
             </div>
             <div className="bg-muted p-4 rounded-lg">
               <p className="text-sm">
-                An administrator will review your request. You'll be notified once your account is approved.
+                An administrator will review your request. You&apos;ll be
+                notified once your account is approved.
               </p>
             </div>
             <Button
@@ -95,7 +107,10 @@ export default function SetupAuthorPage() {
   }
 
   // User role is "reader" - show request form
-  if (userRole.role === "reader" || (userRole.role === "author" && !userRole.authorStatus)) {
+  if (
+    userRole.role === "reader" ||
+    (userRole.role === "author" && !userRole.authorStatus)
+  ) {
     return (
       <div className="container max-w-2xl mx-auto py-12 px-4">
         <Card>
@@ -105,13 +120,14 @@ export default function SetupAuthorPage() {
               Request Author Access
             </CardTitle>
             <CardDescription>
-              Your account is currently set as a reader. Request author access to start creating content.
+              Your account is currently set as a reader. Request author access
+              to start creating content.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">
-                As an author, you'll be able to:
+                As an author, you&apos;ll be able to:
               </p>
               <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground ml-4">
                 <li>Create and publish blog posts</li>
@@ -122,7 +138,8 @@ export default function SetupAuthorPage() {
             </div>
             <div className="bg-muted p-4 rounded-lg">
               <p className="text-sm">
-                An administrator will review your request. You'll be notified once your account is approved.
+                An administrator will review your request. You&apos;ll be
+                notified once your account is approved.
               </p>
             </div>
             <Button
@@ -162,15 +179,15 @@ export default function SetupAuthorPage() {
           <CardContent className="space-y-4">
             <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900 p-4 rounded-lg">
               <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                Your author access request has been submitted and is awaiting administrator approval.
-                This usually takes 1-2 business days.
+                Your author access request has been submitted and is awaiting
+                administrator approval. This usually takes 1-2 business days.
               </p>
             </div>
             <div className="space-y-2">
               <p className="text-sm font-medium">What happens next?</p>
               <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground ml-4">
                 <li>An administrator will review your profile</li>
-                <li>You'll receive a notification once approved</li>
+                <li>You&apos;ll receive a notification once approved</li>
                 <li>Once approved, you can immediately start creating posts</li>
               </ul>
             </div>
@@ -204,7 +221,8 @@ export default function SetupAuthorPage() {
           <CardContent className="space-y-4">
             <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 p-4 rounded-lg">
               <p className="text-sm text-red-800 dark:text-red-200">
-                Your request for author access has been declined by an administrator.
+                Your request for author access has been declined by an
+                administrator.
               </p>
             </div>
             <div className="space-y-2">

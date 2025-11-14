@@ -58,7 +58,7 @@ export default function Home() {
   );
 
   const posts = postsQuery ?? [];
-  const isPostsLoading = postsQuery === undefined;
+  const _isPostsLoading = postsQuery === undefined;
 
   const navigationWithPosts = useBlogNavigation({
     posts,
@@ -83,7 +83,8 @@ export default function Home() {
         hasSetInitialPost.current = true;
       }
     }
-  }, [initialPostIdFromUrl, posts.length, navigationWithPosts.selectedPostId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialPostIdFromUrl, posts, navigationWithPosts.selectedPostId]);
 
   useEffect(() => {
     if (navigation.selectedCategory !== navigationWithPosts.selectedCategory) {
@@ -248,7 +249,12 @@ export default function Home() {
           onOpenChange={finalNavigation.setIsMenuOpen}
         >
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="flex-shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="flex-shrink-0"
+              suppressHydrationWarning
+            >
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>

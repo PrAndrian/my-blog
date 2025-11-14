@@ -31,8 +31,8 @@ export function PostContent({ post, isLoading }: PostContentProps) {
   const headerRef = useRef<HTMLElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [imageLoaded, setImageLoaded] = useState(false);
   const skeletonRef = useRef<HTMLDivElement>(null);
+  const previousPostIdRef = useRef<string | null>(null);
 
   // Convert Convex storage ID to URL if needed
   const imageUrl = useQuery(
@@ -45,10 +45,17 @@ export function PostContent({ post, isLoading }: PostContentProps) {
     ? getPostImageUrl(post.featuredImageUrl, imageUrl)
     : null;
 
-  // Reset image loaded state when post or image URL changes
-  useEffect(() => {
-    setImageLoaded(false);
-  }, [post?._id, displayImageUrl]);
+  // Reset image loaded state when post changes using derived state pattern
+  const currentPostId = post?._id || null;
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  // Reset imageLoaded when post changes (derived state pattern to avoid setState in effect)
+  if (currentPostId !== previousPostIdRef.current) {
+    previousPostIdRef.current = currentPostId;
+    if (imageLoaded) {
+      setImageLoaded(false);
+    }
+  }
 
   // Smooth transition from skeleton to image when image loads
   useEffect(() => {
@@ -194,7 +201,7 @@ export function PostContent({ post, isLoading }: PostContentProps) {
     });
 
     return content.trim();
-  }, [post?.content]);
+  }, [post]);
 
   if (isLoading && !post) {
     return <PostContentSkeleton />;

@@ -26,7 +26,6 @@ import {
   Trash2,
   Eye,
   EyeOff,
-  Loader2,
   BookOpen,
 } from "lucide-react";
 import Link from "next/link";
@@ -107,8 +106,8 @@ function MyPostsContent() {
     currentPage: draftPage,
     totalPages: draftTotalPages,
     setCurrentPage: setDraftPage,
-    hasNextPage: hasNextDraftPage,
-    hasPreviousPage: hasPreviousDraftPage,
+    hasNextPage: _hasNextDraftPage,
+    hasPreviousPage: _hasPreviousDraftPage,
   } = usePagination(draftPosts, 10);
 
   const {
@@ -116,8 +115,8 @@ function MyPostsContent() {
     currentPage: publishedPage,
     totalPages: publishedTotalPages,
     setCurrentPage: setPublishedPage,
-    hasNextPage: hasNextPublishedPage,
-    hasPreviousPage: hasPreviousPublishedPage,
+    hasNextPage: _hasNextPublishedPage,
+    hasPreviousPage: _hasPreviousPublishedPage,
   } = usePagination(publishedPosts, 10);
 
   // Loading state
@@ -344,7 +343,11 @@ function PostCard({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Post actions menu">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Post actions menu"
+              >
                 <MoreVertical className="w-4 h-4" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
