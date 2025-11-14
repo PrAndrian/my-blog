@@ -9,7 +9,7 @@
     "predev": "convex dev --until-success && convex dashboard",
     "build": "next build",
     "start": "next start",
-    "lint": "tsc && next lint",
+    "lint": "tsc && eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky"
@@ -67,7 +67,6 @@
     "cmdk": "^0.2.1",
     "convex": "^1.28.0",
     "date-fns": "^2.30.0",
-    "eslint": "8.57.1",
     "eslint-config-next": "^16.0.1",
     "gsap": "^3.13.0",
     "highlight.js": "^11.11.1",
@@ -99,9 +98,9 @@
   "devDependencies": {
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
-    "@eslint/eslintrc": "^3.3.1",
     "@types/markdown-it": "^14.1.2",
     "@types/turndown": "^5.0.6",
+    "eslint": "9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.6",
