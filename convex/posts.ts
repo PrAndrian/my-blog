@@ -52,6 +52,9 @@ export const searchPosts = query({
       slug: v.string(),
       featuredImageUrl: v.optional(v.string()),
       status: v.optional(v.string()),
+      seo_title: v.optional(v.string()),
+      meta_description: v.optional(v.string()),
+      og_image_url: v.optional(v.string()),
     })
   ),
   handler: async (ctx, args) => {
@@ -137,6 +140,9 @@ export const getPostsByCategory = query({
       featuredImageUrl: v.optional(v.string()),
       content: v.string(),
       status: v.optional(v.string()),
+      seo_title: v.optional(v.string()),
+      meta_description: v.optional(v.string()),
+      og_image_url: v.optional(v.string()),
     })
   ),
   handler: async (ctx, args) => {
@@ -183,6 +189,9 @@ export const getAllPosts = query({
       featuredImageUrl: v.optional(v.string()),
       content: v.string(),
       status: v.optional(v.string()),
+      seo_title: v.optional(v.string()),
+      meta_description: v.optional(v.string()),
+      og_image_url: v.optional(v.string()),
     })
   ),
   handler: async (ctx) => {
@@ -270,6 +279,10 @@ export const createPost = mutation({
     slug: v.string(),
     featuredImageUrl: v.optional(v.string()),
     status: v.union(v.literal("draft"), v.literal("published")),
+    // SEO metadata fields
+    seo_title: v.optional(v.string()),
+    meta_description: v.optional(v.string()),
+    og_image_url: v.optional(v.string()),
   },
   returns: v.id("posts"),
   handler: async (ctx, args) => {
@@ -302,6 +315,10 @@ export const createPost = mutation({
       slug: args.slug,
       featuredImageUrl: args.featuredImageUrl,
       status: args.status,
+      // SEO metadata
+      seo_title: args.seo_title,
+      meta_description: args.meta_description,
+      og_image_url: args.og_image_url,
     });
 
     return postId;
@@ -322,6 +339,10 @@ export const updatePost = mutation({
     slug: v.string(),
     featuredImageUrl: v.optional(v.string()),
     status: v.union(v.literal("draft"), v.literal("published")),
+    // SEO metadata fields
+    seo_title: v.optional(v.string()),
+    meta_description: v.optional(v.string()),
+    og_image_url: v.optional(v.string()),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -362,6 +383,10 @@ export const updatePost = mutation({
       featuredImageUrl: args.featuredImageUrl,
       status: args.status,
       updatedAt: Date.now(),
+      // SEO metadata
+      seo_title: args.seo_title,
+      meta_description: args.meta_description,
+      og_image_url: args.og_image_url,
     });
 
     return null;
@@ -523,6 +548,9 @@ export const getMyPosts = query({
       featuredImageUrl: v.optional(v.string()),
       content: v.string(),
       status: v.optional(v.string()),
+      seo_title: v.optional(v.string()),
+      meta_description: v.optional(v.string()),
+      og_image_url: v.optional(v.string()),
     })
   ),
   handler: async (ctx) => {
@@ -560,6 +588,9 @@ export const getMyDrafts = query({
       featuredImageUrl: v.optional(v.string()),
       content: v.string(),
       status: v.optional(v.string()),
+      seo_title: v.optional(v.string()),
+      meta_description: v.optional(v.string()),
+      og_image_url: v.optional(v.string()),
     })
   ),
   handler: async (ctx) => {
@@ -602,6 +633,9 @@ export const getPostById = query({
       slug: v.string(),
       featuredImageUrl: v.optional(v.string()),
       status: v.optional(v.string()),
+      seo_title: v.optional(v.string()),
+      meta_description: v.optional(v.string()),
+      og_image_url: v.optional(v.string()),
     }),
     v.null()
   ),

@@ -48,6 +48,9 @@ function EditPostContent() {
         slug: data.slug,
         featuredImageUrl: data.featuredImageUrl,
         status: isDraft ? "draft" : "published",
+        seo_title: data.seo_title,
+        meta_description: data.meta_description,
+        og_image_url: data.og_image_url,
       });
 
       showSuccess(
@@ -124,6 +127,9 @@ function EditPostContent() {
             slug: post.slug,
             featuredImageUrl: post.featuredImageUrl,
             status: (post.status as "draft" | "published") || "published",
+            seo_title: post.seo_title,
+            meta_description: post.meta_description,
+            og_image_url: post.og_image_url,
           }}
           postId={postId}
           onSubmit={handleSubmit}

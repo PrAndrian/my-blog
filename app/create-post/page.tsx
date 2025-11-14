@@ -36,6 +36,9 @@ function CreatePostContent() {
         slug: data.slug,
         featuredImageUrl: data.featuredImageUrl,
         status: isDraft ? "draft" : "published",
+        seo_title: data.seo_title,
+        meta_description: data.meta_description,
+        og_image_url: data.og_image_url,
       });
 
       showSuccess(

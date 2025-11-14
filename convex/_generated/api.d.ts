@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as ai from "../ai.js";
 import type * as files from "../files.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_queries from "../lib/queries.js";
@@ -29,6 +30,7 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  ai: typeof ai;
   files: typeof files;
   "lib/auth": typeof lib_auth;
   "lib/queries": typeof lib_queries;

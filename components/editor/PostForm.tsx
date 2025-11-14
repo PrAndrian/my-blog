@@ -1,8 +1,6 @@
 "use client";
 
-import {
-  Form,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Id } from "@/convex/_generated/dataModel";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,7 +23,16 @@ const postFormSchema = z.object({
   tags: z.array(z.string()).default([]),
   slug: z.string().min(1, "Slug is required"),
   featuredImageUrl: z.string().optional(),
-  status: z.enum(["draft", "published"]).default("draft") as z.ZodType<PostStatus>,
+  status: z
+    .enum(["draft", "published"])
+    .default("draft") as z.ZodType<PostStatus>,
+  // SEO metadata fields
+  seo_title: z.string().optional(),
+  meta_description: z
+    .string()
+    .max(180, "Description must be 180 characters or less")
+    .optional(),
+  og_image_url: z.string().optional(),
 });
 
 export type PostFormData = z.infer<typeof postFormSchema>;
@@ -56,6 +63,9 @@ export function PostForm({
       slug: initialData?.slug || "",
       featuredImageUrl: initialData?.featuredImageUrl,
       status: initialData?.status || "draft",
+      seo_title: initialData?.seo_title,
+      meta_description: initialData?.meta_description,
+      og_image_url: initialData?.og_image_url,
     },
   });
 
@@ -71,7 +81,10 @@ export function PostForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={(e) => e.preventDefault()} className="h-full flex flex-col">
+      <form
+        onSubmit={(e) => e.preventDefault()}
+        className="h-full flex flex-col"
+      >
         <ScrollArea className="flex-1 h-full bg-background overflow-x-hidden">
           <div className="w-full max-w-full min-w-0 box-border">
             <article className="mx-auto w-full max-w-full md:max-w-4xl min-w-0 px-4 md:px-6 py-8 box-border">

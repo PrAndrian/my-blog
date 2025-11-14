@@ -21,6 +21,10 @@ export default defineSchema(
       featuredImageUrl: v.optional(v.string()), // URL or Convex storage ID
       slug: v.string(),
       status: v.optional(v.union(v.literal("draft"), v.literal("published"))), // "draft" or "published" (default to "published" for backward compatibility)
+      // SEO metadata fields
+      seo_title: v.optional(v.string()), // Optional SEO-optimized title override
+      meta_description: v.optional(v.string()), // Narrative description for SEO (150-180 chars)
+      og_image_url: v.optional(v.string()), // Custom OpenGraph image URL
     })
       .index("by_category", ["category"])
       .index("by_slug", ["slug"])
