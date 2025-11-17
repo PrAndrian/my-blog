@@ -169,7 +169,8 @@ export function PostContent({ post, isLoading }: PostContentProps) {
         tl.kill();
       };
     }
-  }, [post, displayImageUrl, imageLoaded]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [post, displayImageUrl]);
 
   // Clean markdown content: remove empty code blocks (but preserve actual code blocks)
   // Memoized to avoid expensive regex operations on every render
