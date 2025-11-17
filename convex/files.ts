@@ -3,9 +3,16 @@ import { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 
 export const FILE_UPLOAD = {
-  MAX_SIZE_MB: 10,
-  MAX_SIZE_BYTES: 10 * 1024 * 1024,
-  ALLOWED_TYPES: ["image/jpeg", "image/png", "image/webp", "image/gif"],
+  IMAGE: {
+    MAX_SIZE_MB: 10,
+    MAX_SIZE_BYTES: 10 * 1024 * 1024,
+    ALLOWED_TYPES: ["image/jpeg", "image/png", "image/webp", "image/gif"],
+  },
+  VIDEO: {
+    MAX_SIZE_MB: 50,
+    MAX_SIZE_BYTES: 50 * 1024 * 1024,
+    ALLOWED_TYPES: ["video/mp4", "video/webm", "video/quicktime"],
+  },
 } as const;
 
 /**
@@ -42,18 +49,25 @@ export const generateUploadUrl = mutation({
       );
     }
 
-    // Validate file size
-    if (args.fileSize > FILE_UPLOAD.MAX_SIZE_BYTES) {
+    // Determine file category (image or video)
+    const isImage = (
+      FILE_UPLOAD.IMAGE.ALLOWED_TYPES as readonly string[]
+    ).includes(args.fileType);
+    const isVideo = (
+      FILE_UPLOAD.VIDEO.ALLOWED_TYPES as readonly string[]
+    ).includes(args.fileType);
+
+    if (!isImage && !isVideo) {
       throw new Error(
-        `File size exceeds maximum limit of ${FILE_UPLOAD.MAX_SIZE_MB}MB. Your file is ${(args.fileSize / (1024 * 1024)).toFixed(2)}MB.`
+        `Invalid file type: ${args.fileType}. Allowed types: Images (${FILE_UPLOAD.IMAGE.ALLOWED_TYPES.join(", ")}) or Videos (${FILE_UPLOAD.VIDEO.ALLOWED_TYPES.join(", ")})`
       );
     }
 
-    // Validate file type
-    const allowedTypes: readonly string[] = FILE_UPLOAD.ALLOWED_TYPES;
-    if (!allowedTypes.includes(args.fileType)) {
+    // Validate file size based on type
+    const constraints = isImage ? FILE_UPLOAD.IMAGE : FILE_UPLOAD.VIDEO;
+    if (args.fileSize > constraints.MAX_SIZE_BYTES) {
       throw new Error(
-        `Invalid file type: ${args.fileType}. Allowed types: ${FILE_UPLOAD.ALLOWED_TYPES.join(", ")}`
+        `File size exceeds maximum limit of ${constraints.MAX_SIZE_MB}MB for ${isImage ? "images" : "videos"}. Your file is ${(args.fileSize / (1024 * 1024)).toFixed(2)}MB.`
       );
     }
 

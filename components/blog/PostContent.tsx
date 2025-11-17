@@ -20,6 +20,8 @@ import rehypeHighlight from "rehype-highlight";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import { PostContentSkeleton } from "./PostContentSkeleton";
+import { UploadedVideoEmbed } from "./UploadedVideoEmbed";
+import { VideoEmbed } from "./VideoEmbed";
 
 interface PostContentProps {
   post: Doc<"posts"> | null;
@@ -167,7 +169,7 @@ export function PostContent({ post, isLoading }: PostContentProps) {
         tl.kill();
       };
     }
-  }, [post, displayImageUrl]);
+  }, [post, displayImageUrl, imageLoaded]);
 
   // Clean markdown content: remove empty code blocks (but preserve actual code blocks)
   // Memoized to avoid expensive regex operations on every render
@@ -187,6 +189,20 @@ export function PostContent({ post, isLoading }: PostContentProps) {
       }
       codeBlocks.push(match);
       return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+    });
+
+    // Convert YouTube placeholders to custom HTML element BEFORE ReactMarkdown processes
+    // This prevents ReactMarkdown from interpreting [youtube:id] as link reference syntax
+    content = content.replace(
+      /\[(?:VIDEO_EMBED:)?youtube:([^\]]+)\]/gi,
+      (_match, videoId) => {
+        return `\n\n<youtube-video data-id="${videoId.trim()}"></youtube-video>\n\n`;
+      }
+    );
+
+    // Convert uploaded video placeholders to custom HTML element
+    content = content.replace(/\[video:([^\]]+)\]/gi, (_match, storageId) => {
+      return `\n\n<uploaded-video data-id="${storageId.trim()}"></uploaded-video>\n\n`;
     });
 
     // Remove empty inline code (``) - but not inside code blocks
@@ -282,6 +298,17 @@ export function PostContent({ post, isLoading }: PostContentProps) {
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeRaw, rehypeHighlight]}
               components={{
+                // @ts-expect-error - custom element for YouTube embeds
+                "youtube-video": ({ ...props }: any) => {
+                  const videoId = props["data-id"] || props["dataId"];
+                  if (!videoId) return null;
+                  return <VideoEmbed videoId={videoId} />;
+                },
+                "uploaded-video": ({ ...props }: any) => {
+                  const storageId = props["data-id"] || props["dataId"];
+                  if (!storageId) return null;
+                  return <UploadedVideoEmbed storageId={storageId} />;
+                },
                 code: ({
                   className,
                   children,
@@ -417,7 +444,7 @@ export function PostContent({ post, isLoading }: PostContentProps) {
                           ratio={16 / 9}
                           className="overflow-hidden rounded-lg"
                         >
-                          <img
+                          <Image
                             src={src}
                             alt={alt || ""}
                             className="h-full w-full object-cover"

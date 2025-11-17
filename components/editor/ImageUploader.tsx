@@ -1,11 +1,11 @@
 "use client";
 
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useState, useRef } from "react";
-import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { api } from "@/convex/_generated/api";
+import { useMutation } from "convex/react";
+import { Image as ImageIcon, Upload, X } from "lucide-react";
 import Image from "next/image";
+import { useRef, useState } from "react";
 
 interface ImageUploaderProps {
   value?: string; // Storage ID or URL
@@ -13,7 +13,11 @@ interface ImageUploaderProps {
   onRemove: () => void;
 }
 
-export function ImageUploader({ value, onChange, onRemove }: ImageUploaderProps) {
+export function ImageUploader({
+  value,
+  onChange,
+  onRemove,
+}: ImageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -24,7 +28,12 @@ export function ImageUploader({ value, onChange, onRemove }: ImageUploaderProps)
 
   const handleFileUpload = async (file: File) => {
     // Allowed types from Convex backend
-    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    const ALLOWED_TYPES = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
     const MAX_SIZE_MB = 10;
     const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
@@ -127,7 +136,7 @@ export function ImageUploader({ value, onChange, onRemove }: ImageUploaderProps)
         <div className="relative border rounded-lg overflow-hidden group">
           <div className="relative w-full h-64 bg-muted">
             {previewUrl ? (
-              <img
+              <Image
                 src={previewUrl}
                 alt="Preview"
                 className="w-full h-full object-cover"

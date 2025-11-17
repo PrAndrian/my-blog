@@ -131,6 +131,9 @@ importers:
       '@tiptap/starter-kit':
         specifier: ^3.10.7
         version: 3.10.7
+      '@tiptap/suggestion':
+        specifier: ^3.10.7
+        version: 3.10.7(@tiptap/core@3.10.7(@tiptap/pm@3.10.7))(@tiptap/pm@3.10.7)
       '@types/node':
         specifier: 20.19.19
         version: 20.19.19
@@ -236,6 +239,9 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.18(yaml@2.8.1))
+      tippy.js:
+        specifier: ^6.3.7
+        version: 6.3.7
       turndown:
         specifier: ^7.2.2
         version: 7.2.2
@@ -919,6 +925,9 @@ packages:
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
+
+  '@popperjs/core@2.11.8':
+    resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
 
   '@radix-ui/number@1.0.1':
     resolution: {integrity: sha512-T5gIdVO2mmPW3NNhjNgEP3cqMXjXL9UbO0BzWcXfvdBs+BohbQxvd/K5hSVKmn9/lbTdsQVKbUcP5WLCwvUbBg==}
@@ -2034,6 +2043,12 @@ packages:
 
   '@tiptap/starter-kit@3.10.7':
     resolution: {integrity: sha512-5oGeTzD8tvyeVICHNHJC/wsymacvXlyUQChlrweWYM8eMvNgzP/f14myiF0PyNlXJrGXkYtsAfq5004KeyLW/w==}
+
+  '@tiptap/suggestion@3.10.7':
+    resolution: {integrity: sha512-1SG4tZO9PeyW5Int10S1sNkMz0bdYv3IxVfJJjnhyTpd52lnSm7xe2EGFGyXOX3b5gHK8SYLIar5JgPQEyhCZQ==}
+    peerDependencies:
+      '@tiptap/core': ^3.10.7
+      '@tiptap/pm': ^3.10.7
 
   '@tybys/wasm-util@0.10.1':
     resolution: {integrity: sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==}
@@ -4543,6 +4558,9 @@ packages:
     resolution: {integrity: sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ==}
     engines: {node: '>=12.0.0'}
 
+  tippy.js@6.3.7:
+    resolution: {integrity: sha512-E1d3oP2emgJ9dRQZdf3Kkn0qJgI6ZLpyS5z6ZkY1DF3kaQaBsGZsndEpHwx+eC+tYM41HaSNvNtLx8tU57FzTQ==}
+
   to-regex-range@5.0.1:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
     engines: {node: '>=8.0'}
@@ -5387,6 +5405,8 @@ snapshots:
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
+
+  '@popperjs/core@2.11.8': {}
 
   '@radix-ui/number@1.0.1':
     dependencies:
@@ -6570,6 +6590,11 @@ snapshots:
       '@tiptap/extension-text': 3.10.7(@tiptap/core@3.10.7(@tiptap/pm@3.10.7))
       '@tiptap/extension-underline': 3.10.7(@tiptap/core@3.10.7(@tiptap/pm@3.10.7))
       '@tiptap/extensions': 3.10.7(@tiptap/core@3.10.7(@tiptap/pm@3.10.7))(@tiptap/pm@3.10.7)
+      '@tiptap/pm': 3.10.7
+
+  '@tiptap/suggestion@3.10.7(@tiptap/core@3.10.7(@tiptap/pm@3.10.7))(@tiptap/pm@3.10.7)':
+    dependencies:
+      '@tiptap/core': 3.10.7(@tiptap/pm@3.10.7)
       '@tiptap/pm': 3.10.7
 
   '@tybys/wasm-util@0.10.1':
@@ -9731,6 +9756,10 @@ snapshots:
     dependencies:
       fdir: 6.5.0(picomatch@4.0.3)
       picomatch: 4.0.3
+
+  tippy.js@6.3.7:
+    dependencies:
+      '@popperjs/core': 2.11.8
 
   to-regex-range@5.0.1:
     dependencies:
