@@ -17,6 +17,11 @@ const nextConfig = {
         hostname: "convex.cloud",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "img.youtube.com",
+        pathname: "/**",
+      },
     ],
   },
   turbopack: {},

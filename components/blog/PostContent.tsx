@@ -370,6 +370,32 @@ export function PostContent({ post, isLoading }: PostContentProps) {
                   const childrenArray = Array.isArray(children)
                     ? children
                     : [children];
+
+                  // Check if children contain block-level elements (like video embeds)
+                  const hasBlockElement = childrenArray.some(
+                    (child: React.ReactNode) => {
+                      if (isValidElement(child)) {
+                        const element = child as React.ReactElement<any>;
+                        // Check for custom video elements or div wrappers
+                        const elementType =
+                          typeof element.type === "string" ? element.type : "";
+
+                        return (
+                          elementType === "youtube-video" ||
+                          elementType === "uploaded-video" ||
+                          elementType === "div" ||
+                          element.type === "div"
+                        );
+                      }
+                      return false;
+                    }
+                  );
+
+                  // If we have block elements, return them without wrapping in <p>
+                  if (hasBlockElement) {
+                    return <>{children}</>;
+                  }
+
                   const hasOnlyEmptyCode = childrenArray.every(
                     (child: React.ReactNode) => {
                       if (typeof child === "string") {

@@ -79,6 +79,7 @@ export function YouTubeEmbedCard({ videoId, onDelete }: YouTubeEmbedCardProps) {
         onClick={handleOpenInYouTube}
       >
         <Image
+          fill
           src={thumbnailUrl}
           alt={`YouTube video ${videoId}`}
           className="w-full h-full object-cover"
