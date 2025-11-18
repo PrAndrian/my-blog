@@ -380,11 +380,19 @@ export function PostContent({ post, isLoading }: PostContentProps) {
                         const elementType =
                           typeof element.type === "string" ? element.type : "";
 
+                        // Check for VideoEmbed or UploadedVideoEmbed components
+                        const componentName =
+                          typeof element.type === "function"
+                            ? element.type.name
+                            : "";
+
                         return (
                           elementType === "youtube-video" ||
                           elementType === "uploaded-video" ||
                           elementType === "div" ||
-                          element.type === "div"
+                          element.type === "div" ||
+                          componentName === "VideoEmbed" ||
+                          componentName === "UploadedVideoEmbed"
                         );
                       }
                       return false;
