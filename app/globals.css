@@ -98,6 +98,18 @@
   }
   body {
     @apply bg-background text-foreground min-h-full;
+    font-family: var(--font-inter), sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-space-grotesk), sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.025em;
   }
 }
 
@@ -388,7 +400,9 @@
     padding: 0.2rem 0.4rem;
     border-radius: 0.25rem;
     font-size: 0.875em;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+      "Courier New", monospace;
   }
 
   .tiptap pre {
@@ -460,8 +474,6 @@
     margin: 2rem 0;
   }
 }
-
-
 
 @layer base {
   * {

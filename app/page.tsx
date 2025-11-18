@@ -314,12 +314,50 @@ export default function Home() {
             }
           />
         ) : (
-          <div className="flex h-full items-center justify-center bg-background">
-            <div className="max-w-2xl p-8 text-center">
-              <h1 className="mb-4 text-4xl font-bold">Home</h1>
-              <p className="text-lg text-muted-foreground">
-                Select a category from the sidebar to view articles.
-              </p>
+          <div className="flex h-full items-center justify-center bg-background relative overflow-hidden">
+            {/* Subtle Grid Background */}
+            <div
+              className="absolute inset-0 opacity-[0.15] dark:opacity-[0.08]"
+              style={{
+                backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`,
+                backgroundSize: "24px 24px",
+              }}
+            />
+            <div className="max-w-3xl p-8 relative z-10">
+              <h1 className="mb-6 text-5xl font-bold font-[family-name:var(--font-space-grotesk)] tracking-tight">
+                Hey, je suis Princy 👋
+              </h1>
+              <div className="space-y-4 text-lg text-muted-foreground">
+                <p>
+                  Bienvenue sur mon blog ! Je suis développeur full-stack
+                  React/.NET chez{" "}
+                  <span className="font-semibold text-foreground">
+                    Giva Regroupement Assurance
+                  </span>
+                  , avec un peu plus de 2 ans d&apos;expérience en développement
+                  web et 200+ fonctionnalités livrées en production.
+                </p>
+                <p>
+                  En parallèle de mon travail, je suis également{" "}
+                  <span className="font-semibold text-foreground">
+                    mentor pour développeurs
+                  </span>{" "}
+                  — j&apos;aide les juniors et les personnes en reconversion à
+                  devenir prêts à l&apos;emploi en m&apos;appuyant sur ce que je
+                  vis chaque jour sur le terrain.
+                </p>
+                <p>
+                  Ce blog est un espace où je partage ce que je trouve
+                  intéressant : des actualités tech, des retours
+                  d&apos;expérience, des conseils pour les développeurs, et tout
+                  ce qui peut aider la communauté à progresser.
+                </p>
+
+                <p className="pt-6 text-start italic">
+                  Sélectionnez une catégorie dans la barre latérale pour
+                  découvrir mes articles.
+                </p>
+              </div>
             </div>
           </div>
         )}
@@ -345,12 +383,69 @@ export default function Home() {
           className="absolute inset-0 opacity-0 pointer-events-none"
         >
           {finalNavigation.selectedCategory === "Home" && (
-            <div className="flex h-full items-center justify-center bg-background">
-              <div className="max-w-md p-8 text-center">
-                <h1 className="mb-4 text-4xl font-bold">Home</h1>
-                <p className="text-muted-foreground">
-                  Select a category from the menu to view articles.
-                </p>
+            <div className="flex h-full items-center justify-center bg-background p-6 relative overflow-hidden">
+              {/* Subtle Grid Background */}
+              <div
+                className="absolute inset-0 opacity-[0.15] dark:opacity-[0.08]"
+                style={{
+                  backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`,
+                  backgroundSize: "24px 24px",
+                }}
+              />
+              <div className="max-w-lg relative z-10">
+                <h1 className="mb-6 text-4xl font-bold font-[family-name:var(--font-space-grotesk)] tracking-tight">
+                  Hey, je suis Princy 👋
+                </h1>
+                <div className="space-y-4 text-muted-foreground">
+                  <p>
+                    Bienvenue sur mon blog ! Je suis développeur full-stack
+                    React/.NET chez{" "}
+                    <span className="font-semibold text-foreground">
+                      Giva Regroupement Assurance
+                    </span>
+                    , avec 2+ ans d&apos;expérience et 200+ fonctionnalités
+                    livrées.
+                  </p>
+                  <p>
+                    Je suis également{" "}
+                    <span className="font-semibold text-foreground">
+                      mentor pour développeurs
+                    </span>{" "}
+                    et j&apos;aide les juniors à devenir prêts à l&apos;emploi.
+                  </p>
+                  <p>
+                    Ici, je partage ce que je trouve intéressant : actualités
+                    tech, retours d&apos;expérience, conseils pour devs, et plus
+                    encore.
+                  </p>
+                  <div className="pt-4 space-y-2">
+                    <a
+                      href="mailto:princydruh@gmail.com"
+                      className="block text-sm font-medium hover:underline text-foreground"
+                    >
+                      📧 princydruh@gmail.com
+                    </a>
+                    <a
+                      href="https://www.linkedin.com/in/princy-and"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-sm font-medium hover:underline text-foreground"
+                    >
+                      💼 LinkedIn
+                    </a>
+                    <a
+                      href="https://portfolio-asboevkl5-prandriansprojects.vercel.app/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-sm font-medium hover:underline text-foreground"
+                    >
+                      🌐 Portfolio
+                    </a>
+                  </div>
+                  <p className="pt-6 text-center italic text-sm">
+                    Ouvrez le menu pour découvrir mes articles.
+                  </p>
+                </div>
               </div>
             </div>
           )}
