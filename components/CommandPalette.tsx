@@ -12,6 +12,7 @@ import {
 import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
 import { FileEdit, Home, PlusCircle, Shield } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -28,6 +29,10 @@ export function CommandPalette() {
   const router = useRouter();
   const isAdmin = useQuery(api.users.isAdmin);
   const canPerformAuthorActions = useQuery(api.users.canPerformAuthorActions);
+  const t = useTranslations("Navigation");
+  const tAdmin = useTranslations("Admin");
+  const tSearch = useTranslations("Search");
+  const locale = useLocale();
 
   // Close dialog when user loses author permissions
   useEffect(() => {
@@ -54,23 +59,23 @@ export function CommandPalette() {
   const authorCommands: Command[] = [
     {
       id: "blog",
-      label: "Blog Interface",
+      label: t("home"),
       icon: <Home className="h-4 w-4" />,
-      href: "/",
+      href: `/${locale}`,
       group: "author",
     },
     {
       id: "create-post",
-      label: "Create Post",
+      label: t("createPost"),
       icon: <PlusCircle className="h-4 w-4" />,
-      href: "/create-post",
+      href: `/${locale}/create-post`,
       group: "author",
     },
     {
       id: "my-posts",
-      label: "My Posts",
+      label: t("myPosts"),
       icon: <FileEdit className="h-4 w-4" />,
-      href: "/my-posts",
+      href: `/${locale}/my-posts`,
       group: "author",
     },
   ];
@@ -78,9 +83,9 @@ export function CommandPalette() {
   const adminCommands: Command[] = [
     {
       id: "admin-dashboard",
-      label: "Admin Dashboard",
+      label: tAdmin("title"),
       icon: <Shield className="h-4 w-4" />,
-      href: "/admin",
+      href: `/${locale}/admin`,
       group: "admin",
     },
   ];
@@ -95,9 +100,9 @@ export function CommandPalette() {
       open={open}
       onOpenChange={canPerformAuthorActions ? setOpen : () => {}}
     >
-      <CommandInput placeholder="Type a command or search..." />
+      <CommandInput placeholder={t("search")} />
       <CommandList>
-        <CommandEmpty>No results found.</CommandEmpty>
+        <CommandEmpty>{tSearch("noResults")}</CommandEmpty>
         {canPerformAuthorActions && (
           <>
             <CommandGroup heading="Author">
@@ -107,7 +112,7 @@ export function CommandPalette() {
                   onSelect={() => handleSelect(command.href)}
                 >
                   {command.icon}
-                  <span>{command.label}</span>
+                  <span className="ml-2">{command.label}</span>
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -122,7 +127,7 @@ export function CommandPalette() {
                 onSelect={() => handleSelect(command.href)}
               >
                 {command.icon}
-                <span>{command.label}</span>
+                <span className="ml-2">{command.label}</span>
               </CommandItem>
             ))}
           </CommandGroup>

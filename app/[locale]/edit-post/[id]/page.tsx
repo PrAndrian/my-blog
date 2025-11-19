@@ -1,22 +1,23 @@
 "use client";
 
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useRouter, useParams } from "next/navigation";
-import { useState } from "react";
+import { RequireAuthor } from "@/components/auth/RequireAuthor";
 import {
+  CATEGORIES,
   PostForm,
   PostFormData,
-  CATEGORIES,
 } from "@/components/editor/PostForm";
-import { RequireAuthor } from "@/components/auth/RequireAuthor";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, BookOpen } from "lucide-react";
-import Link from "next/link";
-import type { Id } from "@/convex/_generated/dataModel";
-import { showSuccess, showError } from "@/lib/toast";
-import { handleMutationError } from "@/lib/errors";
 import { Skeleton } from "@/components/ui/skeleton";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { handleMutationError } from "@/lib/errors";
+import { showError, showSuccess } from "@/lib/toast";
+import { useMutation, useQuery } from "convex/react";
+import { ArrowLeft, BookOpen } from "lucide-react";
+import { useLocale } from "next-intl";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function EditPostPage() {
   return (
@@ -29,6 +30,7 @@ export default function EditPostPage() {
 function EditPostContent() {
   const router = useRouter();
   const params = useParams();
+  const locale = useLocale();
   const postId = params.id as Id<"posts">;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,7 +61,7 @@ function EditPostContent() {
           : "Post updated and published!"
       );
 
-      router.push("/my-posts");
+      router.push(`/${locale}/my-posts`);
     } catch (error) {
       const errorMessage = handleMutationError(error);
       showError(errorMessage || "Failed to update post. Please try again.");
@@ -93,7 +95,7 @@ function EditPostContent() {
             The post you are looking for does not exist or you do not have
             permission to edit it.
           </p>
-          <Link href="/my-posts">
+          <Link href={`/${locale}/my-posts`}>
             <Button aria-label="Go to my posts page">Go to My Posts</Button>
           </Link>
         </div>
@@ -104,13 +106,13 @@ function EditPostContent() {
   return (
     <div className="h-screen flex flex-col">
       <div className="flex items-center gap-2 p-4 border-b">
-        <Link href="/my-posts">
+        <Link href={`/${locale}/my-posts`}>
           <Button variant="ghost" size="sm" aria-label="Go back to my posts">
             <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
             Back
           </Button>
         </Link>
-        <Link href="/">
+        <Link href={`/${locale}`}>
           <Button variant="ghost" size="sm" aria-label="Go to blog platform">
             <BookOpen className="w-4 h-4 mr-2" aria-hidden="true" />
             View Blog

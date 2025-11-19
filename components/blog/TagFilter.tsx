@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Filter } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface TagWithCount {
   tag: string;
@@ -30,6 +31,7 @@ export function TagFilter({
   onTagToggle,
   onClearAll,
 }: TagFilterProps) {
+  const t = useTranslations("TagFilter");
   if (availableTags.length === 0) {
     return null;
   }
@@ -41,7 +43,7 @@ export function TagFilter({
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="h-8 gap-2">
           <Filter className="h-4 w-4" />
-          Filter
+          {t("filter")}
           {hasSelectedTags && (
             <Badge variant="secondary" className="ml-1 h-5 px-1 text-xs">
               {selectedTags.length}
@@ -57,14 +59,19 @@ export function TagFilter({
             onCheckedChange={() => onTagToggle(tag)}
           >
             <span className="flex-1">{tag}</span>
-            <span className="ml-2 text-xs text-muted-foreground">({count})</span>
+            <span className="ml-2 text-xs text-muted-foreground">
+              ({count})
+            </span>
           </DropdownMenuCheckboxItem>
         ))}
         {hasSelectedTags && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onClearAll} className="text-center justify-center">
-              Clear all
+            <DropdownMenuItem
+              onClick={onClearAll}
+              className="text-center justify-center"
+            >
+              {t("clearAll")}
             </DropdownMenuItem>
           </>
         )}

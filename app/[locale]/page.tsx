@@ -29,6 +29,7 @@ import { useMobilePanelAnimation } from "@/hooks/useMobilePanelAnimation";
 import { useUrlSync } from "@/hooks/useUrlSync";
 import { useQuery } from "convex/react";
 import { ArrowLeft, HelpCircle, Keyboard, Menu } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -37,6 +38,10 @@ export default function Home() {
   const searchParams = useSearchParams();
   const [announcement, setAnnouncement] = useState<string>("");
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+  const t = useTranslations("HomePage");
+  const tKeyboard = useTranslations("Keyboard");
+  const tPostList = useTranslations("PostList");
+  const tNavigation = useTranslations("Navigation");
 
   const categories = useQuery(api.posts.getCategories) ?? [];
 
@@ -155,55 +160,57 @@ export default function Home() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Keyboard className="h-5 w-5" />
-              Keyboard Shortcuts
+              {tKeyboard("shortcuts")}
             </DialogTitle>
-            <DialogDescription>
-              Navigate the blog using these keyboard shortcuts
-            </DialogDescription>
+            <DialogDescription>{tKeyboard("navigation")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-4">
             <div className="flex items-start justify-between">
-              <span className="text-sm font-medium">Navigation</span>
+              <span className="text-sm font-medium">
+                {tKeyboard("navigation")}
+              </span>
               <div className="text-right text-sm text-muted-foreground space-y-1">
                 <div className="flex items-center gap-1 justify-end">
                   <Kbd>j</Kbd>
-                  <span>Next post</span>
+                  <span>{tKeyboard("nextPost")}</span>
                 </div>
                 <div className="flex items-center gap-1 justify-end">
                   <Kbd>k</Kbd>
-                  <span>Previous post</span>
+                  <span>{tKeyboard("previousPost")}</span>
                 </div>
                 <div className="flex items-center gap-1 justify-end">
                   <KbdGroup>
                     <Kbd>↑</Kbd>
                     <Kbd>↓</Kbd>
                   </KbdGroup>
-                  <span>Navigate posts</span>
+                  <span>{tKeyboard("navigatePosts")}</span>
                 </div>
               </div>
             </div>
             <div className="flex items-start justify-between">
-              <span className="text-sm font-medium">Actions</span>
+              <span className="text-sm font-medium">
+                {tKeyboard("actions")}
+              </span>
               <div className="text-right text-sm text-muted-foreground space-y-1">
                 <div className="flex items-center gap-1 justify-end">
                   <KbdGroup>
                     <Kbd>Enter</Kbd>
                     <Kbd>Space</Kbd>
                   </KbdGroup>
-                  <span>Select post</span>
+                  <span>{tKeyboard("selectPost")}</span>
                 </div>
                 <div className="flex items-center gap-1 justify-end">
                   <Kbd>Esc</Kbd>
-                  <span>Go back / Close</span>
+                  <span>{tKeyboard("goBack")}</span>
                 </div>
               </div>
             </div>
             <div className="flex items-start justify-between">
-              <span className="text-sm font-medium">Help</span>
+              <span className="text-sm font-medium">{tKeyboard("help")}</span>
               <div className="text-right text-sm text-muted-foreground">
                 <div className="flex items-center gap-1 justify-end">
                   <Kbd>?</Kbd>
-                  <span>Show this help</span>
+                  <span>{tKeyboard("showHelp")}</span>
                 </div>
               </div>
             </div>
@@ -237,10 +244,10 @@ export default function Home() {
         <h1 className="flex-1 text-xl font-bold truncate min-w-0">
           {finalNavigation.mobilePanel === "postList" &&
             finalNavigation.selectedCategory === "Home" &&
-            "My Blog"}
+            tNavigation("blogTitle")}
           {finalNavigation.mobilePanel === "postList" &&
             finalNavigation.selectedCategory !== "Home" &&
-            `${finalNavigation.selectedCategory} Posts`}
+            `${finalNavigation.selectedCategory} ${tPostList("posts")}`}
           {finalNavigation.mobilePanel === "postContent" &&
             finalNavigation.selectedPost?.title}
         </h1>
@@ -325,38 +332,26 @@ export default function Home() {
             />
             <div className="max-w-3xl p-8 relative z-10">
               <h1 className="mb-6 text-5xl font-bold font-[family-name:var(--font-space-grotesk)] tracking-tight">
-                Hey, je suis Princy 👋
+                {t("greeting")} 👋
               </h1>
               <div className="space-y-4 text-lg text-muted-foreground">
                 <p>
-                  Bienvenue sur mon blog ! Je suis développeur full-stack
-                  React/.NET chez{" "}
+                  {t("intro")}{" "}
                   <span className="font-semibold text-foreground">
-                    Giva Regroupement Assurance
+                    {t("company")}
                   </span>
-                  , avec un peu plus de 2 ans d&apos;expérience en développement
-                  web et 200+ fonctionnalités livrées en production.
+                  , {t("experience")}
                 </p>
                 <p>
-                  En parallèle de mon travail, je suis également{" "}
+                  {t("mentorship")}{" "}
                   <span className="font-semibold text-foreground">
-                    mentor pour développeurs
+                    {t("mentorRole")}
                   </span>{" "}
-                  — j&apos;aide les juniors et les personnes en reconversion à
-                  devenir prêts à l&apos;emploi en m&apos;appuyant sur ce que je
-                  vis chaque jour sur le terrain.
+                  {t("mentorDescription")}
                 </p>
-                <p>
-                  Ce blog est un espace où je partage ce que je trouve
-                  intéressant : des actualités tech, des retours
-                  d&apos;expérience, des conseils pour les développeurs, et tout
-                  ce qui peut aider la communauté à progresser.
-                </p>
+                <p>{t("blogDescription")}</p>
 
-                <p className="pt-6 text-start italic">
-                  Sélectionnez une catégorie dans la barre latérale pour
-                  découvrir mes articles.
-                </p>
+                <p className="pt-6 text-start italic">{t("selectCategory")}</p>
               </div>
             </div>
           </div>
@@ -394,30 +389,24 @@ export default function Home() {
               />
               <div className="max-w-lg relative z-10">
                 <h1 className="mb-6 text-4xl font-bold font-[family-name:var(--font-space-grotesk)] tracking-tight">
-                  Hey, je suis Princy 👋
+                  {t("greeting")} 👋
                 </h1>
                 <div className="space-y-4 text-muted-foreground">
                   <p>
-                    Bienvenue sur mon blog ! Je suis développeur full-stack
-                    React/.NET chez{" "}
+                    {t("intro")}{" "}
                     <span className="font-semibold text-foreground">
-                      Giva Regroupement Assurance
+                      {t("company")}
                     </span>
-                    , avec 2+ ans d&apos;expérience et 200+ fonctionnalités
-                    livrées.
+                    , {t("experience")}
                   </p>
                   <p>
-                    Je suis également{" "}
+                    {t("mentorship")}{" "}
                     <span className="font-semibold text-foreground">
-                      mentor pour développeurs
+                      {t("mentorRole")}
                     </span>{" "}
-                    et j&apos;aide les juniors à devenir prêts à l&apos;emploi.
+                    {t("mentorDescription")}
                   </p>
-                  <p>
-                    Ici, je partage ce que je trouve intéressant : actualités
-                    tech, retours d&apos;expérience, conseils pour devs, et plus
-                    encore.
-                  </p>
+                  <p>{t("blogDescription")}</p>
                   <div className="pt-4 space-y-2">
                     <a
                       href="mailto:princydruh@gmail.com"
@@ -443,7 +432,7 @@ export default function Home() {
                     </a>
                   </div>
                   <p className="pt-6 text-center italic text-sm">
-                    Ouvrez le menu pour découvrir mes articles.
+                    {t("openMenu")}
                   </p>
                 </div>
               </div>

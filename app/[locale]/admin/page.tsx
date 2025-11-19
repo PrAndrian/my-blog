@@ -1,8 +1,8 @@
 "use client";
 
+import { AuthorRequestSkeleton } from "@/components/admin/AuthorRequestSkeleton";
 import { RequireAdmin } from "@/components/auth/RequireAdmin";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,16 +11,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, CheckCircle, XCircle, ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { formatDate } from "@/lib/utils";
-import type { Id } from "@/convex/_generated/dataModel";
-import { useState } from "react";
-import { showSuccess, showError } from "@/lib/toast";
-import { handleMutationError } from "@/lib/errors";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import { AuthorRequestSkeleton } from "@/components/admin/AuthorRequestSkeleton";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { handleMutationError } from "@/lib/errors";
+import { showError, showSuccess } from "@/lib/toast";
+import { formatDate } from "@/lib/utils";
+import { useMutation, useQuery } from "convex/react";
+import { ArrowLeft, CheckCircle, Loader2, XCircle } from "lucide-react";
+import { useLocale } from "next-intl";
+import Link from "next/link";
+import { useState } from "react";
 
 export default function AdminPage() {
   return (
@@ -34,6 +35,7 @@ function AdminContent() {
   const pendingRequests = useQuery(api.users.getPendingAuthorRequests);
   const approveAuthor = useMutation(api.users.approveAuthor);
   const rejectAuthor = useMutation(api.users.rejectAuthor);
+  const locale = useLocale();
 
   const [processingId, setProcessingId] = useState<Id<"users"> | null>(null);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
@@ -96,8 +98,13 @@ function AdminContent() {
     <div className="container max-w-6xl mx-auto py-8 px-4">
       {/* Header */}
       <div className="mb-8">
-        <Link href="/">
-          <Button variant="ghost" size="sm" className="mb-4" aria-label="Go back to blog">
+        <Link href={`/${locale}`}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mb-4"
+            aria-label="Go back to blog"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
             Back to Blog
           </Button>
@@ -210,5 +217,3 @@ function AdminContent() {
     </div>
   );
 }
-
-

@@ -21,6 +21,9 @@ export default defineSchema(
       featuredImageUrl: v.optional(v.string()), // URL or Convex storage ID
       slug: v.string(),
       status: v.optional(v.union(v.literal("draft"), v.literal("published"))), // "draft" or "published" (default to "published" for backward compatibility)
+      // Multilingual fields
+      language: v.optional(v.string()), // Language code (e.g., "en", "fr") - defaults to "en" if not set
+      translationId: v.optional(v.string()), // UUID to link translations of the same post
       // SEO metadata fields
       seo_title: v.optional(v.string()), // Optional SEO-optimized title override
       meta_description: v.optional(v.string()), // Narrative description for SEO (150-180 chars)
@@ -32,7 +35,10 @@ export default defineSchema(
       .index("by_userId", ["userId"])
       .index("by_status", ["status"])
       .index("by_userId_and_status", ["userId", "status"])
-      .index("by_category_and_status", ["category", "status"]),
+      .index("by_category_and_status", ["category", "status"])
+      .index("by_language", ["language"])
+      .index("by_translationId", ["translationId"])
+      .index("by_language_and_status", ["language", "status"]),
     // Users table for role management
     users: defineTable({
       userId: v.string(), // Clerk user ID

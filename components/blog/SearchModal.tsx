@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,14 +11,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { Calendar, FileText, Search, Tag, User } from "lucide-react";
+import { useFormatter, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { format } from "date-fns";
 
 interface SearchModalProps {
   open: boolean;
@@ -32,6 +32,8 @@ export function SearchModal({
 }: SearchModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+  const t = useTranslations("Search");
+  const format = useFormatter();
 
   const searchResults = useQuery(
     api.posts.searchPosts,
@@ -39,14 +41,10 @@ export function SearchModal({
   );
 
   const handlePostClick = useCallback(
-    (post: {
-      _id: Id<"posts">;
-      slug: string;
-      category: string;
-    }) => {
+    (post: { _id: Id<"posts">; slug: string; category: string }) => {
       onOpenChange(false);
       setSearchQuery("");
-      
+
       if (onSelectPost) {
         // Use the provided handler (integrated with page navigation)
         onSelectPost(post._id, post.category);
@@ -63,7 +61,7 @@ export function SearchModal({
     if (open) {
       const timer = setTimeout(() => {
         const input = document.querySelector(
-          '[data-search-input]'
+          "[data-search-input]"
         ) as HTMLInputElement;
         if (input) {
           input.focus();
@@ -82,10 +80,8 @@ export function SearchModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col p-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
-          <DialogTitle>Search Posts</DialogTitle>
-          <DialogDescription>
-            Search by title, tags, category, author, or content
-          </DialogDescription>
+          <DialogTitle>{t("title")}</DialogTitle>
+          <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
 
         <div className="px-6 py-4 border-b">
@@ -93,7 +89,7 @@ export function SearchModal({
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               data-search-input
-              placeholder="Search posts..."
+              placeholder={t("placeholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -105,23 +101,24 @@ export function SearchModal({
           {!searchQuery.trim() ? (
             <div className="py-12 text-center text-muted-foreground">
               <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Start typing to search posts...</p>
+              <p>{t("startTyping")}</p>
             </div>
           ) : searchResults === undefined ? (
             <div className="py-12 text-center text-muted-foreground">
               <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-              <p>Searching...</p>
+              <p>{t("searching")}</p>
             </div>
           ) : displayResults.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">
               <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No posts found matching &quot;{searchQuery}&quot;</p>
+              <p>{t("noResultsMatching", { query: searchQuery })}</p>
             </div>
           ) : (
             <div className="py-4 space-y-2">
               <p className="text-sm text-muted-foreground mb-4">
-                Found {displayResults.length} result
-                {displayResults.length !== 1 ? "s" : ""}
+                {displayResults.length === 1
+                  ? t("foundResults", { count: displayResults.length })
+                  : t("foundResultsPlural", { count: displayResults.length })}
               </p>
               {displayResults.map((post) => (
                 <Button
@@ -149,7 +146,13 @@ export function SearchModal({
                       <span>•</span>
                       <div className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        <span>{format(new Date(post.date), "MMM d, yyyy")}</span>
+                        <span>
+                          {format.dateTime(new Date(post.date), {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
                       </div>
                     </div>
                     {post.tags.length > 0 && (
@@ -181,4 +184,3 @@ export function SearchModal({
     </Dialog>
   );
 }
-

@@ -4,13 +4,14 @@ import { RequireAuthor } from "@/components/auth/RequireAuthor";
 import { PostForm, PostFormData } from "@/components/editor/PostForm";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
+import { handleMutationError } from "@/lib/errors";
+import { showError, showSuccess } from "@/lib/toast";
 import { useMutation } from "convex/react";
 import { ArrowLeft, BookOpen } from "lucide-react";
+import { useLocale } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { showSuccess, showError } from "@/lib/toast";
-import { handleMutationError } from "@/lib/errors";
 
 export default function CreatePostPage() {
   return (
@@ -22,6 +23,7 @@ export default function CreatePostPage() {
 
 function CreatePostContent() {
   const router = useRouter();
+  const locale = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const createPost = useMutation(api.posts.createPost);
 
@@ -47,7 +49,7 @@ function CreatePostContent() {
           : "Post published successfully!"
       );
 
-      router.push("/my-posts");
+      router.push(`/${locale}/my-posts`);
     } catch (error) {
       const errorMessage = handleMutationError(error);
       showError(errorMessage || "Failed to create post. Please try again.");
@@ -58,13 +60,13 @@ function CreatePostContent() {
   return (
     <div className="h-screen flex flex-col">
       <div className="flex items-center gap-2 p-4 border-b">
-        <Link href="/my-posts">
+        <Link href={`/${locale}/my-posts`}>
           <Button variant="ghost" size="sm" aria-label="Go back to my posts">
             <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
             Back
           </Button>
         </Link>
-        <Link href="/">
+        <Link href={`/${locale}`}>
           <Button variant="ghost" size="sm" aria-label="Go to blog platform">
             <BookOpen className="w-4 h-4 mr-2" aria-hidden="true" />
             View Blog

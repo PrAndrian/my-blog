@@ -8,7 +8,8 @@ import { Separator } from "@/components/ui/separator";
 import { Doc, Id } from "@/convex/_generated/dataModel";
 import { usePagination } from "@/hooks/usePagination";
 import { ANIMATION, PAGINATION } from "@/lib/constants";
-import { cn, formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useFormatter, useTranslations } from "next-intl";
 import { gsap } from "gsap";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PostListSkeleton } from "./PostListSkeleton";
@@ -31,6 +32,8 @@ export function PostList({
   const selectedPostRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const postsContainerRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations("PostList");
+  const format = useFormatter();
 
   // Extract available tags with counts from posts
   const availableTags = useMemo(() => {
@@ -150,8 +153,10 @@ export function PostList({
         <div className="p-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <h2 className="text-xl font-semibold">{category} Posts</h2>
-              <p className="text-sm text-muted-foreground">Loading...</p>
+              <h2 className="text-xl font-semibold">
+                {category} {t("posts")}
+              </h2>
+              <p className="text-sm text-muted-foreground">{t("loading")}</p>
             </div>
           </div>
         </div>
@@ -169,13 +174,16 @@ export function PostList({
       <div className="p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            <h2 className="text-xl font-semibold">{category} Posts</h2>
+            <h2 className="text-xl font-semibold">
+              {category} {t("posts")}
+            </h2>
             <p className="text-sm text-muted-foreground">
               {selectedTags.length > 0 && filteredPosts
                 ? `${filteredPosts.length} of ${posts.length}`
                 : posts.length}{" "}
-              {posts.length === 1 ? "article" : "articles"}
-              {totalPages > 1 && ` (Page ${currentPage} of ${totalPages})`}
+              {posts.length === 1 ? t("article") : t("articles")}
+              {totalPages > 1 &&
+                ` (${t("pageOf", { current: currentPage, total: totalPages })})`}
             </p>
           </div>
           <TagFilter
@@ -196,8 +204,8 @@ export function PostList({
             <div className="flex h-32 items-center justify-center text-center">
               <p className="text-sm text-muted-foreground">
                 {selectedTags.length > 0
-                  ? "No posts match the selected tags."
-                  : "No posts in this category yet."}
+                  ? t("noPostsMatch")
+                  : t("noPostsInCategory")}
               </p>
             </div>
           ) : (
@@ -211,8 +219,13 @@ export function PostList({
                   data-first-post={index === 0 ? "true" : undefined}
                   tabIndex={0}
                   role="button"
-                  aria-label={`${post.title}. Published ${formatDate(
-                    post.date
+                  aria-label={`${post.title}. ${t("posts")} ${format.dateTime(
+                    post.date,
+                    {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    }
                   )}. ${post.tags?.length || 0} tags.`}
                   aria-pressed={selectedPostId === post._id}
                   className={cn(
@@ -230,7 +243,13 @@ export function PostList({
                     {post.title}
                   </h3>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                    <span>{formatDate(post.date)}</span>
+                    <span>
+                      {format.dateTime(post.date, {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </span>
                     <span>•</span>
                     <Badge variant="secondary" className="text-xs">
                       {post.category}

@@ -1,6 +1,8 @@
 "use client";
 
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Sidebar,
@@ -23,16 +25,16 @@ import {
   Briefcase,
   FileText,
   Home,
+  LucideIcon,
   Search,
   ShoppingBag,
   Sparkles,
-  LucideIcon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { SearchModal } from "./SearchModal";
-import { Button } from "@/components/ui/button";
 
 interface BlogNavigationSidebarProps {
   selectedCategory: string;
@@ -75,6 +77,10 @@ export function BlogNavigationSidebar({
   const [mounted, setMounted] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const categoryButtonsRef = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const t = useTranslations("Navigation");
+  const tSidebar = useTranslations("BlogNavigationSidebar");
+  const tCategories = useTranslations("Categories");
+  const tSearch = useTranslations("Search");
 
   // Hydration-safe mounting pattern
   useEffect(() => {
@@ -108,7 +114,7 @@ export function BlogNavigationSidebar({
                   ? "/assets/princy-sign-light.png"
                   : "/assets/princy-sign-dark.png"
               }
-              alt="My Blog"
+              alt={t("blogTitle")}
               width={200}
               height={80}
               className="object-contain"
@@ -117,7 +123,9 @@ export function BlogNavigationSidebar({
           )}
           {!mounted && (
             <div className="h-20 w-[200px] flex items-center justify-center">
-              <span className="text-2xl font-bold tracking-tight">My Blog</span>
+              <span className="text-2xl font-bold tracking-tight">
+                {t("blogTitle")}
+              </span>
             </div>
           )}
         </SidebarHeader>
@@ -135,7 +143,7 @@ export function BlogNavigationSidebar({
                   onClick={() => setSearchOpen(true)}
                 >
                   <Search className="mr-2 h-4 w-4" />
-                  <span>Search posts...</span>
+                  <span>{tSearch("placeholder")}</span>
                 </Button>
               </div>
 
@@ -151,8 +159,8 @@ export function BlogNavigationSidebar({
                         }}
                         onClick={() => onSelectCategory("Home")}
                         isActive={selectedCategory === "Home"}
-                        tooltip="Navigate to home"
-                        aria-label="Navigate to home"
+                        tooltip={t("home")}
+                        aria-label={t("home")}
                         aria-current={
                           selectedCategory === "Home" ? "page" : undefined
                         }
@@ -164,7 +172,7 @@ export function BlogNavigationSidebar({
                         )}
                       >
                         <Home className="mr-2 h-4 w-4" />
-                        <span>Home</span>
+                        <span>{tCategories("Home")}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   </SidebarMenu>
@@ -176,7 +184,7 @@ export function BlogNavigationSidebar({
               {/* Articles section */}
               <SidebarGroup>
                 <SidebarGroupLabel className="px-2 text-sm font-semibold tracking-tight text-muted-foreground">
-                  Articles
+                  {tSidebar("articles")}
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
@@ -189,8 +197,8 @@ export function BlogNavigationSidebar({
                           }}
                           onClick={() => onSelectCategory(category)}
                           isActive={selectedCategory === category}
-                          tooltip={`View ${category} articles`}
-                          aria-label={`View ${category} articles`}
+                          tooltip={tSidebar("viewArticles", { category })}
+                          aria-label={tSidebar("viewArticles", { category })}
                           aria-current={
                             selectedCategory === category ? "page" : undefined
                           }
@@ -216,7 +224,8 @@ export function BlogNavigationSidebar({
         </SidebarContent>
 
         <SidebarFooter className="border-t mt-auto">
-          <div className="p-4">
+          <div className="p-4 flex flex-col items-start justify-between gap-2">
+            <LanguageSwitcher />
             <ThemeToggle />
           </div>
         </SidebarFooter>

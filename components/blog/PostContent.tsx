@@ -9,10 +9,10 @@ import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 import { ANIMATION } from "@/lib/constants";
 import { getPostImageUrl } from "@/lib/postUtils";
-import { formatDate } from "@/lib/utils";
 import { useQuery } from "convex/react";
 import { gsap } from "gsap";
 import "highlight.js/styles/github.css";
+import { useFormatter } from "next-intl";
 import Image from "next/image";
 import { isValidElement, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -23,12 +23,29 @@ import { PostContentSkeleton } from "./PostContentSkeleton";
 import { UploadedVideoEmbed } from "./UploadedVideoEmbed";
 import { VideoEmbed } from "./VideoEmbed";
 
+// These are used for direct comparison in containsBlockElement
+const VideoEmbedComponent = VideoEmbed;
+const UploadedVideoEmbedComponent = UploadedVideoEmbed;
+
+const YoutubeVideo = ({ ...props }: any) => {
+  const videoId = props["data-id"] || props["dataId"];
+  if (!videoId) return null;
+  return <VideoEmbed videoId={videoId} />;
+};
+
+const UploadedVideo = ({ ...props }: any) => {
+  const storageId = props["data-id"] || props["dataId"];
+  if (!storageId) return null;
+  return <UploadedVideoEmbed storageId={storageId} />;
+};
+
 interface PostContentProps {
   post: Doc<"posts"> | null;
   isLoading?: boolean;
 }
 
 export function PostContent({ post, isLoading }: PostContentProps) {
+  const format = useFormatter();
   const articleRef = useRef<HTMLElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
@@ -243,7 +260,13 @@ export function PostContent({ post, isLoading }: PostContentProps) {
 
             {/* Meta information */}
             <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-              <span>{formatDate(post?.date || 0)}</span>
+              <span>
+                {format.dateTime(post?.date || 0, {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </span>
               <span>•</span>
               <span>{post?.author}</span>
               <span>•</span>
@@ -300,16 +323,8 @@ export function PostContent({ post, isLoading }: PostContentProps) {
               rehypePlugins={[rehypeRaw, rehypeHighlight]}
               components={{
                 // @ts-expect-error - custom element for YouTube embeds
-                "youtube-video": ({ ...props }: any) => {
-                  const videoId = props["data-id"] || props["dataId"];
-                  if (!videoId) return null;
-                  return <VideoEmbed videoId={videoId} />;
-                },
-                "uploaded-video": ({ ...props }: any) => {
-                  const storageId = props["data-id"] || props["dataId"];
-                  if (!storageId) return null;
-                  return <UploadedVideoEmbed storageId={storageId} />;
-                },
+                "youtube-video": YoutubeVideo,
+                "uploaded-video": UploadedVideo,
                 code: ({
                   className,
                   children,
@@ -371,33 +386,54 @@ export function PostContent({ post, isLoading }: PostContentProps) {
                     ? children
                     : [children];
 
-                  // Check if children contain block-level elements (like video embeds)
-                  const hasBlockElement = childrenArray.some(
-                    (child: React.ReactNode) => {
-                      if (isValidElement(child)) {
-                        const element = child as React.ReactElement<any>;
-                        // Check for custom video elements or div wrappers
-                        const elementType =
-                          typeof element.type === "string" ? element.type : "";
+                  // Recursively check if children contain block-level elements (like video embeds)
+                  const containsBlockElement = (
+                    node: React.ReactNode
+                  ): boolean => {
+                    if (isValidElement(node)) {
+                      const element = node as React.ReactElement<any>;
+                      // Check for custom video elements or div wrappers
+                      const elementType =
+                        typeof element.type === "string" ? element.type : "";
 
-                        // Check for VideoEmbed or UploadedVideoEmbed components
-                        const componentName =
-                          typeof element.type === "function"
-                            ? element.type.name
-                            : "";
+                      // Check for VideoEmbed or UploadedVideoEmbed components
+                      const componentName =
+                        typeof element.type === "function"
+                          ? element.type.name
+                          : "";
 
-                        return (
-                          elementType === "youtube-video" ||
-                          elementType === "uploaded-video" ||
-                          elementType === "div" ||
-                          element.type === "div" ||
-                          componentName === "VideoEmbed" ||
-                          componentName === "UploadedVideoEmbed"
-                        );
+                      if (
+                        elementType === "youtube-video" ||
+                        elementType === "uploaded-video" ||
+                        elementType === "div" ||
+                        element.type === "div" ||
+                        element.type === VideoEmbedComponent ||
+                        element.type === UploadedVideoEmbedComponent ||
+                        element.type === YoutubeVideo ||
+                        element.type === UploadedVideo ||
+                        componentName === "VideoEmbed" ||
+                        componentName === "UploadedVideo" ||
+                        componentName === "YoutubeVideo" ||
+                        componentName === "UploadedVideoEmbed"
+                      ) {
+                        return true;
                       }
-                      return false;
+
+                      // Recursively check children
+                      if (element.props.children) {
+                        const nestedChildren = Array.isArray(
+                          element.props.children
+                        )
+                          ? element.props.children
+                          : [element.props.children];
+                        return nestedChildren.some(containsBlockElement);
+                      }
                     }
-                  );
+                    return false;
+                  };
+
+                  const hasBlockElement =
+                    childrenArray.some(containsBlockElement);
 
                   // If we have block elements, return them without wrapping in <p>
                   if (hasBlockElement) {

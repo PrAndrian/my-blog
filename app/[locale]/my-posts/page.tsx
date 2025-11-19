@@ -1,11 +1,9 @@
 "use client";
 
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useRouter } from "next/navigation";
 import { RequireAuthor } from "@/components/auth/RequireAuthor";
-import { Button } from "@/components/ui/button";
+import { PostCardSkeleton } from "@/components/blog/PostCardSkeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -13,31 +11,34 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Pagination } from "@/components/ui/pagination";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { usePagination } from "@/hooks/usePagination";
+import { handleMutationError } from "@/lib/errors";
+import { showError, showSuccess } from "@/lib/toast";
+import { formatDate, formatRelativeTime } from "@/lib/utils";
+import { useMutation, useQuery } from "convex/react";
 import {
-  PlusCircle,
-  MoreVertical,
+  BookOpen,
   Edit,
-  Trash2,
   Eye,
   EyeOff,
-  BookOpen,
+  MoreVertical,
+  PlusCircle,
+  Trash2,
 } from "lucide-react";
+import { useLocale } from "next-intl";
 import Link from "next/link";
-import { formatDate, formatRelativeTime } from "@/lib/utils";
-import type { Id } from "@/convex/_generated/dataModel";
-import { showSuccess, showError } from "@/lib/toast";
-import { handleMutationError } from "@/lib/errors";
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { PostCardSkeleton } from "@/components/blog/PostCardSkeleton";
-import { usePagination } from "@/hooks/usePagination";
-import { Pagination } from "@/components/ui/pagination";
 
 export default function MyPostsPage() {
   return (
@@ -49,6 +50,7 @@ export default function MyPostsPage() {
 
 function MyPostsContent() {
   const router = useRouter();
+  const locale = useLocale();
   const posts = useQuery(api.posts.getMyPosts);
   const deletePost = useMutation(api.posts.deletePost);
   const publishPost = useMutation(api.posts.publishPost);
@@ -149,13 +151,13 @@ function MyPostsContent() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/">
+          <Link href={`/${locale}`}>
             <Button variant="outline" aria-label="Go to blog platform">
               <BookOpen className="w-4 h-4 mr-2" aria-hidden="true" />
               View Blog
             </Button>
           </Link>
-          <Link href="/create-post">
+          <Link href={`/${locale}/create-post`}>
             <Button aria-label="Create a new blog post">
               <PlusCircle className="w-4 h-4 mr-2" aria-hidden="true" />
               Create New Post
@@ -195,7 +197,7 @@ function MyPostsContent() {
             <p className="text-muted-foreground text-center mb-4">
               Get started by creating your first blog post
             </p>
-            <Link href="/create-post">
+            <Link href={`/${locale}/create-post`}>
               <Button>
                 <PlusCircle className="w-4 h-4 mr-2" />
                 Create Your First Post
@@ -219,7 +221,7 @@ function MyPostsContent() {
                 onDelete={handleDeleteClick}
                 onPublish={handlePublish}
                 onUnpublish={handleUnpublish}
-                onEdit={(id) => router.push(`/edit-post/${id}`)}
+                onEdit={(id) => router.push(`/${locale}/edit-post/${id}`)}
               />
             ))}
           </div>
@@ -249,7 +251,7 @@ function MyPostsContent() {
                 onDelete={handleDeleteClick}
                 onPublish={handlePublish}
                 onUnpublish={handleUnpublish}
-                onEdit={(id) => router.push(`/edit-post/${id}`)}
+                onEdit={(id) => router.push(`/${locale}/edit-post/${id}`)}
               />
             ))}
           </div>

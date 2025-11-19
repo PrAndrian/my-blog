@@ -283,6 +283,9 @@ export const createPost = mutation({
     seo_title: v.optional(v.string()),
     meta_description: v.optional(v.string()),
     og_image_url: v.optional(v.string()),
+    // Multilingual fields
+    language: v.optional(v.string()),
+    translationId: v.optional(v.string()),
   },
   returns: v.id("posts"),
   handler: async (ctx, args) => {
@@ -319,6 +322,9 @@ export const createPost = mutation({
       seo_title: args.seo_title,
       meta_description: args.meta_description,
       og_image_url: args.og_image_url,
+      // Multilingual fields - default to 'en' if not specified
+      language: args.language || "en",
+      translationId: args.translationId,
     });
 
     return postId;
@@ -343,6 +349,9 @@ export const updatePost = mutation({
     seo_title: v.optional(v.string()),
     meta_description: v.optional(v.string()),
     og_image_url: v.optional(v.string()),
+    // Multilingual fields
+    language: v.optional(v.string()),
+    translationId: v.optional(v.string()),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -387,6 +396,9 @@ export const updatePost = mutation({
       seo_title: args.seo_title,
       meta_description: args.meta_description,
       og_image_url: args.og_image_url,
+      // Multilingual fields
+      language: args.language,
+      translationId: args.translationId,
     });
 
     return null;
@@ -687,5 +699,144 @@ export const checkSlugAvailability = query({
     }
 
     return false; // Slug is taken
+  },
+});
+
+// ============================================================================
+// MULTILINGUAL QUERIES
+// ============================================================================
+
+/**
+ * Get posts filtered by language
+ * Returns published posts in the specified language, sorted by date (newest first)
+ */
+export const getPostsByLanguage = query({
+  args: {
+    language: v.string(),
+    category: v.optional(v.string()),
+  },
+  returns: v.array(
+    v.object({
+      _id: v.id("posts"),
+      _creationTime: v.number(),
+      title: v.string(),
+      author: v.string(),
+      authorName: v.optional(v.string()),
+      userId: v.optional(v.string()),
+      date: v.number(),
+      updatedAt: v.optional(v.number()),
+      category: v.string(),
+      tags: v.array(v.string()),
+      slug: v.string(),
+      featuredImageUrl: v.optional(v.string()),
+      content: v.string(),
+      status: v.optional(v.string()),
+      language: v.optional(v.string()),
+      translationId: v.optional(v.string()),
+      seo_title: v.optional(v.string()),
+      meta_description: v.optional(v.string()),
+      og_image_url: v.optional(v.string()),
+    })
+  ),
+  handler: async (ctx, args) => {
+    // Get published posts in the specified language using compound index
+    const posts = await ctx.db
+      .query("posts")
+      .withIndex("by_language_and_status", (q) =>
+        q.eq("language", args.language).eq("status", "published")
+      )
+      .collect();
+
+    // Also get posts without language field (backward compatibility - treat as 'en')
+    let legacyPosts: typeof posts = [];
+    if (args.language === "en") {
+      legacyPosts = await ctx.db
+        .query("posts")
+        .withIndex("by_status", (q) => q.eq("status", "published"))
+        .filter((q) => q.eq(q.field("language"), undefined))
+        .collect();
+    }
+
+    // Combine both sets
+    let allPosts = [...posts, ...legacyPosts];
+
+    // Filter by category if specified
+    if (args.category) {
+      allPosts = allPosts.filter((post) => post.category === args.category);
+    }
+
+    // Sort by date descending (newest first)
+    return allPosts.sort((a, b) => b.date - a.date);
+  },
+});
+
+/**
+ * Get translations of a post by translationId
+ * Returns all posts that share the same translationId
+ */
+export const getPostTranslations = query({
+  args: {
+    translationId: v.string(),
+  },
+  returns: v.array(
+    v.object({
+      _id: v.id("posts"),
+      title: v.string(),
+      slug: v.string(),
+      language: v.optional(v.string()),
+      status: v.optional(v.string()),
+    })
+  ),
+  handler: async (ctx, args) => {
+    const posts = await ctx.db
+      .query("posts")
+      .withIndex("by_translationId", (q) =>
+        q.eq("translationId", args.translationId)
+      )
+      .collect();
+
+    return posts.map((post) => ({
+      _id: post._id,
+      title: post.title,
+      slug: post.slug,
+      language: post.language,
+      status: post.status,
+    }));
+  },
+});
+
+/**
+ * Get categories for a specific language
+ * Returns unique categories from published posts in the specified language
+ */
+export const getCategoriesByLanguage = query({
+  args: { language: v.string() },
+  returns: v.array(v.string()),
+  handler: async (ctx, args) => {
+    // Get published posts in the specified language
+    const posts = await ctx.db
+      .query("posts")
+      .withIndex("by_language_and_status", (q) =>
+        q.eq("language", args.language).eq("status", "published")
+      )
+      .collect();
+
+    // Also get posts without language field (backward compatibility - treat as 'en')
+    let legacyPosts: typeof posts = [];
+    if (args.language === "en") {
+      legacyPosts = await ctx.db
+        .query("posts")
+        .withIndex("by_status", (q) => q.eq("status", "published"))
+        .filter((q) => q.eq(q.field("language"), undefined))
+        .collect();
+    }
+
+    // Combine and extract unique categories
+    const allPosts = [...posts, ...legacyPosts];
+    const categories = Array.from(
+      new Set(allPosts.map((post) => post.category))
+    );
+
+    return categories.sort();
   },
 });
