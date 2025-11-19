@@ -3,23 +3,26 @@
 import { Form } from "@/components/ui/form";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Id } from "@/convex/_generated/dataModel";
+import { CATEGORIES, type PostStatus } from "@/types/post";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { CATEGORIES, type PostCategory, type PostStatus } from "@/types/post";
-import { PostFormHeader } from "./PostFormHeader";
 import { PostFormContent } from "./PostFormContent";
+import { PostFormHeader } from "./PostFormHeader";
 
 // Re-export for backward compatibility
 export { CATEGORIES };
 
+import { api } from "@/convex/_generated/api";
+import { useQuery } from "convex/react";
+
+// ... imports
+
 const postFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   content: z.string().min(1, "Content is required"),
-  category: z.enum(CATEGORIES, {
-    required_error: "Category is required",
-  }) as z.ZodType<PostCategory>,
+  category: z.string().min(1, "Category is required"),
   tags: z.array(z.string()).default([]),
   slug: z.string().min(1, "Slug is required"),
   featuredImageUrl: z.string().optional(),
@@ -51,6 +54,7 @@ export function PostForm({
   isSubmitting = false,
 }: PostFormProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const categories = useQuery(api.categories.list);
 
   // Initialize form with react-hook-form
   const form = useForm<PostFormData>({
@@ -58,7 +62,7 @@ export function PostForm({
     defaultValues: {
       title: initialData?.title || "",
       content: initialData?.content || "",
-      category: initialData?.category || "Productivity",
+      category: initialData?.category || "",
       tags: initialData?.tags || [],
       slug: initialData?.slug || "",
       featuredImageUrl: initialData?.featuredImageUrl,
@@ -96,6 +100,7 @@ export function PostForm({
                 isSubmitting={isSubmitting}
                 onDraft={handleDraft}
                 onPublish={handlePublish}
+                categories={categories}
               />
 
               <PostFormContent form={form} />

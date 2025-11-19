@@ -60,6 +60,15 @@ export default defineSchema(
       .index("by_userId", ["userId"])
       .index("by_role", ["role"])
       .index("by_authorStatus", ["authorStatus"]),
+    // Categories table
+    categories: defineTable({
+      slug: v.string(),
+      name_en: v.string(),
+      name_fr: v.string(),
+      section: v.optional(v.string()), // Group categories into sections (e.g., "Articles", "Resources", "Efficy Labs")
+    })
+      .index("by_slug", ["slug"])
+      .index("by_section", ["section"]),
   },
   // If you ever get an error about schema mismatch
   // between your data and your schema, and you cannot

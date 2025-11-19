@@ -2,18 +2,9 @@ import type { Id } from "@/convex/_generated/dataModel";
 
 export type PostStatus = "draft" | "published";
 
-export const CATEGORIES = [
-  "Productivity",
-  "AI",
-  "Career",
-  "Gear",
-  "Technology",
-  "Design",
-  "Business",
-  "Personal",
-] as const;
+export const CATEGORIES = [] as const;
 
-export type PostCategory = (typeof CATEGORIES)[number];
+export type PostCategory = string;
 
 export interface PostBase {
   title: string;

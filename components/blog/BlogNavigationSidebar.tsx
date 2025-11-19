@@ -18,8 +18,11 @@ import {
   SidebarProvider,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import { api } from "@/convex/_generated/api";
+import type { Doc } from "@/convex/_generated/dataModel";
 import { CATEGORY_ICONS, DEFAULT_CATEGORY_ICON } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { useQuery } from "convex/react";
 import {
   BookOpen,
   Briefcase,
@@ -30,7 +33,7 @@ import {
   ShoppingBag,
   Sparkles,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -39,7 +42,6 @@ import { SearchModal } from "./SearchModal";
 interface BlogNavigationSidebarProps {
   selectedCategory: string;
   onSelectCategory: (category: string) => void;
-  categories: string[];
   onSelectPost?: (postId: string, category: string) => void;
 }
 
@@ -70,7 +72,6 @@ const getCategoryIcon = (category: string): React.ReactNode => {
 export function BlogNavigationSidebar({
   selectedCategory,
   onSelectCategory,
-  categories,
   onSelectPost,
 }: BlogNavigationSidebarProps) {
   const { resolvedTheme } = useTheme();
@@ -81,6 +82,19 @@ export function BlogNavigationSidebar({
   const tSidebar = useTranslations("BlogNavigationSidebar");
   const tCategories = useTranslations("Categories");
   const tSearch = useTranslations("Search");
+  const locale = useLocale();
+
+  // Fetch category data for localization
+  const categoriesData = useQuery(api.categories.list) ?? [];
+
+  // Helper to get localized category name
+  const getCategoryName = (slug: string) => {
+    const category = categoriesData.find(
+      (cat: Doc<"categories">) => cat.slug === slug
+    );
+    if (!category) return slug;
+    return locale === "fr" ? category.name_fr : category.name_en;
+  };
 
   // Hydration-safe mounting pattern
   useEffect(() => {
@@ -181,44 +195,74 @@ export function BlogNavigationSidebar({
 
               <SidebarSeparator />
 
-              {/* Articles section */}
-              <SidebarGroup>
-                <SidebarGroupLabel className="px-2 text-sm font-semibold tracking-tight text-muted-foreground">
-                  {tSidebar("articles")}
-                </SidebarGroupLabel>
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    {categories.map((category) => (
-                      <SidebarMenuItem key={category}>
-                        <SidebarMenuButton
-                          ref={(el) => {
-                            if (el)
-                              categoryButtonsRef.current.set(category, el);
-                          }}
-                          onClick={() => onSelectCategory(category)}
-                          isActive={selectedCategory === category}
-                          tooltip={tSidebar("viewArticles", { category })}
-                          aria-label={tSidebar("viewArticles", { category })}
-                          aria-current={
-                            selectedCategory === category ? "page" : undefined
-                          }
-                          className={cn(
-                            "w-full justify-start transition-all duration-200 !bg-transparent",
-                            selectedCategory === category
-                              ? "!bg-secondary !text-secondary-foreground font-medium"
-                              : "hover:!bg-accent hover:!text-accent-foreground"
-                          )}
-                        >
-                          <span className="mr-2">
-                            {getCategoryIcon(category)}
-                          </span>
-                          <span>{category}</span>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
+              {/* Group categories by section */}
+              {(() => {
+                // Group categories by section
+                const grouped = categoriesData.reduce(
+                  (acc, cat) => {
+                    const section = cat.section || "Other";
+                    if (!acc[section]) acc[section] = [];
+                    acc[section].push(cat.slug);
+                    return acc;
+                  },
+                  {} as Record<string, string[]>
+                );
+
+                // Render each section
+                return Object.entries(grouped).map(
+                  ([section, sectionCategories]) => (
+                    <div key={section}>
+                      <SidebarGroup>
+                        <SidebarGroupLabel className="px-2 text-sm font-semibold tracking-tight text-muted-foreground">
+                          {section}
+                        </SidebarGroupLabel>
+                        <SidebarGroupContent>
+                          <SidebarMenu>
+                            {sectionCategories.map((category) => (
+                              <SidebarMenuItem key={category}>
+                                <SidebarMenuButton
+                                  ref={(el) => {
+                                    if (el)
+                                      categoryButtonsRef.current.set(
+                                        category,
+                                        el
+                                      );
+                                  }}
+                                  onClick={() => onSelectCategory(category)}
+                                  isActive={selectedCategory === category}
+                                  tooltip={tSidebar("viewArticles", {
+                                    category: getCategoryName(category),
+                                  })}
+                                  aria-label={tSidebar("viewArticles", {
+                                    category: getCategoryName(category),
+                                  })}
+                                  aria-current={
+                                    selectedCategory === category
+                                      ? "page"
+                                      : undefined
+                                  }
+                                  className={cn(
+                                    "w-full justify-start transition-all duration-200 !bg-transparent",
+                                    selectedCategory === category
+                                      ? "!bg-secondary !text-secondary-foreground font-medium"
+                                      : "hover:!bg-accent hover:!text-accent-foreground"
+                                  )}
+                                >
+                                  <span className="mr-2">
+                                    {getCategoryIcon(category)}
+                                  </span>
+                                  <span>{getCategoryName(category)}</span>
+                                </SidebarMenuButton>
+                              </SidebarMenuItem>
+                            ))}
+                          </SidebarMenu>
+                        </SidebarGroupContent>
+                      </SidebarGroup>
+                      <SidebarSeparator />
+                    </div>
+                  )
+                );
+              })()}
             </div>
           </ScrollArea>
         </SidebarContent>

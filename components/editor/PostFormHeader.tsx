@@ -16,7 +16,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import type { Id } from "@/convex/_generated/dataModel";
+import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { Settings } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { PostFormData } from "./PostForm";
@@ -30,6 +30,7 @@ interface PostFormHeaderProps {
   isSubmitting?: boolean;
   onDraft: () => Promise<void>;
   onPublish: () => Promise<void>;
+  categories?: Doc<"categories">[];
 }
 
 export function PostFormHeader({
@@ -40,6 +41,7 @@ export function PostFormHeader({
   isSubmitting = false,
   onDraft,
   onPublish,
+  categories,
 }: PostFormHeaderProps) {
   return (
     <header className="mb-8 flex items-start justify-between gap-4">
@@ -90,6 +92,7 @@ export function PostFormHeader({
             onDraft={onDraft}
             onPublish={onPublish}
             onClose={() => onSheetOpenChange(false)}
+            categories={categories}
           />
         </SheetContent>
       </Sheet>

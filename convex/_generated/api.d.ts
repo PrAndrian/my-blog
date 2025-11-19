@@ -9,9 +9,11 @@
  */
 
 import type * as ai from "../ai.js";
+import type * as categories from "../categories.js";
 import type * as files from "../files.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_queries from "../lib/queries.js";
+import type * as migration from "../migration.js";
 import type * as posts from "../posts.js";
 import type * as users from "../users.js";
 
@@ -31,9 +33,11 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   ai: typeof ai;
+  categories: typeof categories;
   files: typeof files;
   "lib/auth": typeof lib_auth;
   "lib/queries": typeof lib_queries;
+  migration: typeof migration;
   posts: typeof posts;
   users: typeof users;
 }>;

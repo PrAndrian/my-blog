@@ -5,12 +5,14 @@ import { Card } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
 import { usePagination } from "@/hooks/usePagination";
 import { ANIMATION, PAGINATION } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { useFormatter, useTranslations } from "next-intl";
+import { useQuery } from "convex/react";
 import { gsap } from "gsap";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PostListSkeleton } from "./PostListSkeleton";
 import { TagFilter } from "./TagFilter";
@@ -34,6 +36,16 @@ export function PostList({
   const postsContainerRef = useRef<HTMLDivElement>(null);
   const t = useTranslations("PostList");
   const format = useFormatter();
+  const locale = useLocale();
+  const categories = useQuery(api.categories.list);
+
+  // Helper to get localized category name
+  const getCategoryName = (slug: string) => {
+    if (!categories) return slug;
+    const category = categories.find((c) => c.slug === slug);
+    if (!category) return slug;
+    return locale === "fr" ? category.name_fr : category.name_en;
+  };
 
   // Extract available tags with counts from posts
   const availableTags = useMemo(() => {
@@ -175,7 +187,7 @@ export function PostList({
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <h2 className="text-xl font-semibold">
-              {category} {t("posts")}
+              {getCategoryName(category)} {t("posts")}
             </h2>
             <p className="text-sm text-muted-foreground">
               {selectedTags.length > 0 && filteredPosts
@@ -252,7 +264,7 @@ export function PostList({
                     </span>
                     <span>•</span>
                     <Badge variant="secondary" className="text-xs">
-                      {post.category}
+                      {getCategoryName(post.category)}
                     </Badge>
                   </div>
                   {post.tags && post.tags.length > 0 && (

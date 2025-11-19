@@ -43,8 +43,6 @@ export default function Home() {
   const tPostList = useTranslations("PostList");
   const tNavigation = useTranslations("Navigation");
 
-  const categories = useQuery(api.posts.getCategories) ?? [];
-
   // Read initial category and post from URL params
   const initialCategoryFromUrl = searchParams.get("category") || "Home";
   const initialPostIdFromUrl = searchParams.get("post") as Id<"posts"> | null;
@@ -273,7 +271,6 @@ export default function Home() {
               <BlogNavigationSidebar
                 selectedCategory={finalNavigation.selectedCategory}
                 onSelectCategory={finalNavigation.handleSelectCategory}
-                categories={categories}
               />
             </div>
           </SheetContent>
@@ -291,7 +288,6 @@ export default function Home() {
           <BlogNavigationSidebar
             selectedCategory={finalNavigation.selectedCategory}
             onSelectCategory={finalNavigation.handleSelectCategory}
-            categories={categories}
             onSelectPost={(postId, category) => {
               // Navigate to the post with category and post ID in URL
               const url = `/?category=${encodeURIComponent(

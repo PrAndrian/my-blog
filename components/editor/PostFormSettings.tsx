@@ -1,14 +1,16 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
   useFormField,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -16,21 +18,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Save, Send, Sparkles } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
-import { PostFormData } from "./PostForm";
-import { ImageUploader } from "./ImageUploader";
-import { SlugInput } from "./SlugInput";
-import type { Id } from "@/convex/_generated/dataModel";
-import { PostFormTags } from "./PostFormTags";
-import { CATEGORIES } from "@/types/post";
-import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import type { Doc, Id } from "@/convex/_generated/dataModel";
+import { showError, showSuccess } from "@/lib/toast";
+import { useAction } from "convex/react";
+import { Loader2, Save, Send, Sparkles } from "lucide-react";
 import { useState } from "react";
-import { showSuccess, showError } from "@/lib/toast";
+import { UseFormReturn } from "react-hook-form";
+import { ImageUploader } from "./ImageUploader";
+import { PostFormData } from "./PostForm";
+import { PostFormTags } from "./PostFormTags";
+import { SlugInput } from "./SlugInput";
 
 interface PostFormSettingsProps {
   form: UseFormReturn<PostFormData>;
@@ -39,10 +38,12 @@ interface PostFormSettingsProps {
   onDraft: () => Promise<void>;
   onPublish: () => Promise<void>;
   onClose: () => void;
+  categories?: Doc<"categories">[];
 }
 
 function CategorySelectWrapper({
   field,
+  categories,
 }: {
   field: {
     value: string;
@@ -51,6 +52,7 @@ function CategorySelectWrapper({
     name?: string;
     ref?: React.Ref<any>;
   };
+  categories?: Doc<"categories">[];
 }) {
   const { error, formItemId, formDescriptionId, formMessageId } =
     useFormField();
@@ -62,6 +64,7 @@ function CategorySelectWrapper({
       formDescriptionId={formDescriptionId}
       formMessageId={formMessageId}
       error={error}
+      categories={categories}
     />
   );
 }
@@ -72,6 +75,7 @@ function CategorySelect({
   formDescriptionId,
   formMessageId,
   error,
+  categories,
 }: {
   field: {
     value: string;
@@ -83,6 +87,7 @@ function CategorySelect({
   formDescriptionId: string;
   formMessageId: string;
   error?: { message?: string };
+  categories?: Doc<"categories">[];
 }) {
   const handleValueChange = (value: string) => {
     field.onChange(value);
@@ -104,9 +109,9 @@ function CategorySelect({
         <SelectValue placeholder="Select a category" />
       </SelectTrigger>
       <SelectContent>
-        {CATEGORIES.map((cat) => (
-          <SelectItem key={cat} value={cat}>
-            {cat}
+        {categories?.map((cat) => (
+          <SelectItem key={cat._id} value={cat.slug}>
+            {cat.name_en} ({cat.name_fr})
           </SelectItem>
         ))}
       </SelectContent>
@@ -122,6 +127,7 @@ export function PostFormSettings({
   onDraft,
   onPublish,
   onClose,
+  categories,
 }: PostFormSettingsProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const generateSEOMetadata = useAction(api.ai.generateSEOMetadata);
@@ -199,7 +205,7 @@ export function PostFormSettings({
             <FormLabel>
               Category <span className="text-destructive">*</span>
             </FormLabel>
-            <CategorySelectWrapper field={field} />
+            <CategorySelectWrapper field={field} categories={categories} />
             <FormMessage />
           </FormItem>
         )}

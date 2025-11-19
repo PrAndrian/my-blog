@@ -55,6 +55,8 @@ export const searchPosts = query({
       seo_title: v.optional(v.string()),
       meta_description: v.optional(v.string()),
       og_image_url: v.optional(v.string()),
+      language: v.optional(v.string()),
+      translationId: v.optional(v.string()),
     })
   ),
   handler: async (ctx, args) => {
@@ -143,6 +145,8 @@ export const getPostsByCategory = query({
       seo_title: v.optional(v.string()),
       meta_description: v.optional(v.string()),
       og_image_url: v.optional(v.string()),
+      language: v.optional(v.string()),
+      translationId: v.optional(v.string()),
     })
   ),
   handler: async (ctx, args) => {
@@ -192,6 +196,8 @@ export const getAllPosts = query({
       seo_title: v.optional(v.string()),
       meta_description: v.optional(v.string()),
       og_image_url: v.optional(v.string()),
+      language: v.optional(v.string()),
+      translationId: v.optional(v.string()),
     })
   ),
   handler: async (ctx) => {
@@ -233,6 +239,8 @@ export const getPostBySlug = query({
       slug: v.string(),
       featuredImageUrl: v.optional(v.string()),
       status: v.optional(v.string()),
+      language: v.optional(v.string()),
+      translationId: v.optional(v.string()),
     }),
     v.null()
   ),
@@ -563,6 +571,8 @@ export const getMyPosts = query({
       seo_title: v.optional(v.string()),
       meta_description: v.optional(v.string()),
       og_image_url: v.optional(v.string()),
+      language: v.optional(v.string()),
+      translationId: v.optional(v.string()),
     })
   ),
   handler: async (ctx) => {
@@ -603,6 +613,8 @@ export const getMyDrafts = query({
       seo_title: v.optional(v.string()),
       meta_description: v.optional(v.string()),
       og_image_url: v.optional(v.string()),
+      language: v.optional(v.string()),
+      translationId: v.optional(v.string()),
     })
   ),
   handler: async (ctx) => {
@@ -648,6 +660,8 @@ export const getPostById = query({
       seo_title: v.optional(v.string()),
       meta_description: v.optional(v.string()),
       og_image_url: v.optional(v.string()),
+      language: v.optional(v.string()),
+      translationId: v.optional(v.string()),
     }),
     v.null()
   ),
