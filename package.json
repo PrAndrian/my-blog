@@ -12,6 +12,9 @@
     "lint": "tsc && eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "test": "echo \"No tests yet\" && exit 0",
+    "deploy:staging": "bash scripts/deploy-staging.sh",
+    "deploy:production": "bash scripts/deploy-production.sh",
     "prepare": "husky"
   },
   "dependencies": {

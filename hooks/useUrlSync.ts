@@ -35,12 +35,12 @@ export function useUrlSync({
     // On initial mount, sync from URL to state
     if (isInitialMount.current) {
       prevParamsRef.current = currentParams;
-      
+
       // If we have a category param, set it first (even if it matches, to ensure state is correct)
       if (categoryParam) {
         isSyncingRef.current = true;
         onCategoryChange(categoryParam);
-        
+
         // If we also have a post param, set it after category
         if (postParam) {
           // Use setTimeout to ensure category is set before post
@@ -70,7 +70,7 @@ export function useUrlSync({
         isInitialMount.current = false;
         return;
       }
-      
+
       isInitialMount.current = false;
       return;
     }
@@ -86,7 +86,7 @@ export function useUrlSync({
 
     if (categoryChanged || postChanged || postRemoved) {
       isSyncingRef.current = true;
-      
+
       if (categoryChanged) {
         // Category changed - set category first, then post if present
         onCategoryChange(categoryParam!);
@@ -121,7 +121,15 @@ export function useUrlSync({
         }, 0);
       }
     }
-  }, [enabled, searchParams, selectedCategory, selectedPostId, onCategoryChange, onPostChange, onPanelChange]);
+  }, [
+    enabled,
+    searchParams,
+    selectedCategory,
+    selectedPostId,
+    onCategoryChange,
+    onPostChange,
+    onPanelChange,
+  ]);
 
   useEffect(() => {
     if (!enabled || isInitialMount.current || isSyncingRef.current) return;
@@ -138,4 +146,3 @@ export function useUrlSync({
     router.replace(newUrl, { scroll: false });
   }, [enabled, selectedCategory, selectedPostId, router]);
 }
-

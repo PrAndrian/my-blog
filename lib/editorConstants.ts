@@ -3,4 +3,3 @@ export const EDITOR_CONFIG = {
   MAX_TAGS: 10,
   PLACEHOLDER: "Start typing or press '/' for commands...",
 } as const;
-

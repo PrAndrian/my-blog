@@ -30,4 +30,3 @@ export function PostFormContent({ form }: PostFormContentProps) {
     />
   );
 }
-

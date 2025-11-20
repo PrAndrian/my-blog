@@ -24,4 +24,3 @@ export function useAnnouncement(announcement: string) {
 
   return announcementRef;
 }
-

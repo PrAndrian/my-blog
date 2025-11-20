@@ -34,4 +34,3 @@ export const CATEGORY_ICONS = {
 
 // Default icon for categories without a specific icon
 export const DEFAULT_CATEGORY_ICON = "BookOpen" as const;
-

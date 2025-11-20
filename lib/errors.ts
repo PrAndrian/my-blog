@@ -7,7 +7,7 @@ export const ERROR_CODES = {
   UNEXPECTED_ERROR: "UNEXPECTED_ERROR",
 } as const;
 
-export type ErrorCode = typeof ERROR_CODES[keyof typeof ERROR_CODES];
+export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
 
 export interface ErrorContext {
   [key: string]: unknown;
@@ -44,4 +44,3 @@ export class AppError extends Error {
     this.name = "AppError";
   }
 }
-

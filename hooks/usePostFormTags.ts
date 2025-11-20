@@ -12,13 +12,13 @@ export function usePostFormTags(form: UseFormReturn<PostFormData>) {
   const addTag = useCallback(() => {
     const tag = tagInput.trim().toLowerCase();
     const currentTags = form.getValues("tags");
-    
+
     if (!tag) return;
-    
+
     if (currentTags.includes(tag)) {
       return; // Tag already exists
     }
-    
+
     if (tag.length > MAX_TAG_LENGTH) {
       form.setError("tags", {
         type: "manual",
@@ -26,7 +26,7 @@ export function usePostFormTags(form: UseFormReturn<PostFormData>) {
       });
       return;
     }
-    
+
     if (currentTags.length >= MAX_TAGS) {
       form.setError("tags", {
         type: "manual",
@@ -34,7 +34,7 @@ export function usePostFormTags(form: UseFormReturn<PostFormData>) {
       });
       return;
     }
-    
+
     if (!/^[a-z0-9\s-]+$/.test(tag)) {
       form.setError("tags", {
         type: "manual",
@@ -42,7 +42,7 @@ export function usePostFormTags(form: UseFormReturn<PostFormData>) {
       });
       return;
     }
-    
+
     form.setValue("tags", [...currentTags, tag]);
     setTagInput("");
     form.clearErrors("tags");
@@ -77,4 +77,3 @@ export function usePostFormTags(form: UseFormReturn<PostFormData>) {
     handleKeyDown,
   };
 }
-

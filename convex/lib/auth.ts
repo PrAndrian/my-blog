@@ -22,7 +22,9 @@ export async function requireAuthorizedUser(
 ): Promise<AuthorizedUser> {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) {
-    throw new Error("Unauthenticated: You must be logged in to perform this action");
+    throw new Error(
+      "Unauthenticated: You must be logged in to perform this action"
+    );
   }
 
   const user = await ctx.db
@@ -72,7 +74,9 @@ export async function requireAuthor(
 ): Promise<AuthorizedUser> {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) {
-    throw new Error("Unauthenticated: You must be logged in to perform this action");
+    throw new Error(
+      "Unauthenticated: You must be logged in to perform this action"
+    );
   }
 
   const user = await ctx.db
@@ -96,4 +100,3 @@ export async function requireAuthor(
 
   return { identity, user };
 }
-

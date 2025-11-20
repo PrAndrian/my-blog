@@ -64,14 +64,15 @@ export function useKeyboardNavigation({
           currentIndex < posts.length - 1 ? currentIndex + 1 : 0;
         onSelectPost(posts[nextIndex]._id);
       } else {
-        const prevIndex = currentIndex > 0 ? currentIndex - 1 : posts.length - 1;
+        const prevIndex =
+          currentIndex > 0 ? currentIndex - 1 : posts.length - 1;
         onSelectPost(posts[prevIndex]._id);
       }
     };
 
     const startRepeat = (direction: "next" | "prev") => {
       if (isRepeatingRef.current && directionRef.current === direction) return;
-      
+
       stopRepeat();
       isRepeatingRef.current = true;
       directionRef.current = direction;
@@ -108,7 +109,10 @@ export function useKeyboardNavigation({
           onCloseHelp?.();
         } else if (isMenuOpen) {
           // Menu close handled by Sheet component
-        } else if (mobilePanel === "postContent" || mobilePanel === "postList") {
+        } else if (
+          mobilePanel === "postContent" ||
+          mobilePanel === "postList"
+        ) {
           onMobileBack();
         }
         return;
@@ -128,7 +132,7 @@ export function useKeyboardNavigation({
         }
 
         e.preventDefault();
-        
+
         // Only handle initial press, ignore browser's native repeat
         if (!e.repeat) {
           const direction = e.key === "j" ? "next" : "prev";
@@ -186,4 +190,3 @@ export function useKeyboardNavigation({
     showKeyboardHelp,
   ]);
 }
-

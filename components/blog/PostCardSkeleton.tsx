@@ -28,7 +28,3 @@ export function PostCardSkeleton() {
     </Card>
   );
 }
-
-
-
-

@@ -101,7 +101,3 @@ export function Pagination({
     </div>
   );
 }
-
-
-
-

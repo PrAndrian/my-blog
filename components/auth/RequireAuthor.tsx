@@ -49,7 +49,11 @@ function AuthorCheck({ children }: { children: React.ReactNode }) {
     } else if (userRole && userRole.role !== "author") {
       // User is registered but not an author
       router.push("/setup-author");
-    } else if (userRole && userRole.role === "author" && userRole.authorStatus !== "approved") {
+    } else if (
+      userRole &&
+      userRole.role === "author" &&
+      userRole.authorStatus !== "approved"
+    ) {
       // User is an author but not approved (pending or rejected)
       router.push("/setup-author");
     }
