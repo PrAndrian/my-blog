@@ -151,7 +151,7 @@ interface BlogPost {
 }
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-const siteName = "My Blog";
+const siteName = "Princy Dev";
 const siteDescription = "A modern blog platform";
 
 export function getDefaultMetadata(): Metadata {

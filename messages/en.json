@@ -28,11 +28,11 @@
     "viewBlog": "View Blog",
     "backToBlog": "Back to Blog",
     "backToMyPosts": "Back to My Posts",
-    "blogTitle": "My Blog",
+    "blogTitle": "Princy's Dev blog",
     "search": "Search"
   },
   "HomePage": {
-    "title": "Welcome to My Blog",
+    "title": "Welcome to Princy's Dev blog",
     "subtitle": "Thoughts, stories and ideas.",
     "greeting": "Hey, I'm Princy",
     "intro": "Welcome to my blog! I'm a full-stack React/.NET developer at",

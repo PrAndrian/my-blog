@@ -28,11 +28,11 @@
     "viewBlog": "Voir le blog",
     "backToBlog": "Retour au blog",
     "backToMyPosts": "Retour à mes articles",
-    "blogTitle": "Mon Blog",
+    "blogTitle": "Le blog de Princy",
     "search": "Rechercher"
   },
   "HomePage": {
-    "title": "Bienvenue sur mon blog",
+    "title": "Bienvenue sur le blog de Princy",
     "subtitle": "Pensées, histoires et idées.",
     "greeting": "Hey, je suis Princy",
     "intro": "Bienvenue sur mon blog ! Je suis développeur full-stack React/.NET chez",
