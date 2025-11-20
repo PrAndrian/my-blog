@@ -96,8 +96,10 @@
   * {
     @apply border-border;
   }
+  html,
   body {
-    @apply bg-background text-foreground min-h-full;
+    @apply bg-background text-foreground;
+    height: 100%;
     font-family: var(--font-inter), sans-serif;
   }
 

@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Sheet,
   SheetContent,
@@ -317,40 +318,44 @@ export default function Home() {
             }
           />
         ) : (
-          <div className="flex h-full items-center justify-center bg-background relative overflow-hidden">
-            {/* Subtle Grid Background */}
-            <div
-              className="absolute inset-0 opacity-[0.15] dark:opacity-[0.08]"
-              style={{
-                backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`,
-                backgroundSize: "24px 24px",
-              }}
-            />
-            <div className="max-w-3xl p-8 relative z-10">
-              <h1 className="mb-6 text-5xl font-bold font-[family-name:var(--font-space-grotesk)] tracking-tight">
-                {t("greeting")} 👋
-              </h1>
-              <div className="space-y-4 text-lg text-muted-foreground">
-                <p>
-                  {t("intro")}{" "}
-                  <span className="font-semibold text-foreground">
-                    {t("company")}
-                  </span>
-                  , {t("experience")}
-                </p>
-                <p>
-                  {t("mentorship")}{" "}
-                  <span className="font-semibold text-foreground">
-                    {t("mentorRole")}
-                  </span>{" "}
-                  {t("mentorDescription")}
-                </p>
-                <p>{t("blogDescription")}</p>
+          <ScrollArea className="max-h-screen h-full w-full bg-background">
+            <div className="flex min-h-screen items-center justify-center relative overflow-hidden p-8">
+              {/* Subtle Grid Background */}
+              <div
+                className="absolute inset-0 opacity-[0.15] dark:opacity-[0.08]"
+                style={{
+                  backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`,
+                  backgroundSize: "24px 24px",
+                }}
+              />
+              <div className="max-w-3xl relative z-10">
+                <h1 className="mb-6 text-5xl font-bold font-[family-name:var(--font-space-grotesk)] tracking-tight">
+                  {t("greeting")} 👋
+                </h1>
+                <div className="space-y-4 text-lg text-muted-foreground">
+                  <p>
+                    {t("intro")}{" "}
+                    <span className="font-semibold text-foreground">
+                      {t("company")}
+                    </span>
+                    , {t("experience")}
+                  </p>
+                  <p>
+                    {t("mentorship")}{" "}
+                    <span className="font-semibold text-foreground">
+                      {t("mentorRole")}
+                    </span>{" "}
+                    {t("mentorDescription")}
+                  </p>
+                  <p>{t("blogDescription")}</p>
 
-                <p className="pt-6 text-start italic">{t("selectCategory")}</p>
+                  <p className="pt-6 text-start italic">
+                    {t("selectCategory")}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          </ScrollArea>
         )}
       </div>
 
@@ -374,65 +379,67 @@ export default function Home() {
           className="absolute inset-0 opacity-0 pointer-events-none"
         >
           {finalNavigation.selectedCategory === "Home" && (
-            <div className="flex h-full items-center justify-center bg-background p-6 relative overflow-hidden">
-              {/* Subtle Grid Background */}
-              <div
-                className="absolute inset-0 opacity-[0.15] dark:opacity-[0.08]"
-                style={{
-                  backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`,
-                  backgroundSize: "24px 24px",
-                }}
-              />
-              <div className="max-w-lg relative z-10">
-                <h1 className="mb-6 text-4xl font-bold font-[family-name:var(--font-space-grotesk)] tracking-tight">
-                  {t("greeting")} 👋
-                </h1>
-                <div className="space-y-4 text-muted-foreground">
-                  <p>
-                    {t("intro")}{" "}
-                    <span className="font-semibold text-foreground">
-                      {t("company")}
-                    </span>
-                    , {t("experience")}
-                  </p>
-                  <p>
-                    {t("mentorship")}{" "}
-                    <span className="font-semibold text-foreground">
-                      {t("mentorRole")}
-                    </span>{" "}
-                    {t("mentorDescription")}
-                  </p>
-                  <p>{t("blogDescription")}</p>
-                  <div className="pt-4 space-y-2">
-                    <a
-                      href="mailto:princydruh@gmail.com"
-                      className="block text-sm font-medium hover:underline text-foreground"
-                    >
-                      📧 princydruh@gmail.com
-                    </a>
-                    <a
-                      href="https://www.linkedin.com/in/princy-and"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block text-sm font-medium hover:underline text-foreground"
-                    >
-                      💼 LinkedIn
-                    </a>
-                    <a
-                      href="https://portfolio-asboevkl5-prandriansprojects.vercel.app/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block text-sm font-medium hover:underline text-foreground"
-                    >
-                      🌐 Portfolio
-                    </a>
+            <ScrollArea className="h-full w-full bg-background">
+              <div className="flex min-h-full items-center justify-center relative overflow-hidden p-6">
+                {/* Subtle Grid Background */}
+                <div
+                  className="absolute inset-0 opacity-[0.15] dark:opacity-[0.08]"
+                  style={{
+                    backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`,
+                    backgroundSize: "24px 24px",
+                  }}
+                />
+                <div className="max-w-lg relative z-10">
+                  <h1 className="mb-6 text-4xl font-bold font-[family-name:var(--font-space-grotesk)] tracking-tight">
+                    {t("greeting")} 👋
+                  </h1>
+                  <div className="space-y-4 text-muted-foreground">
+                    <p>
+                      {t("intro")}{" "}
+                      <span className="font-semibold text-foreground">
+                        {t("company")}
+                      </span>
+                      , {t("experience")}
+                    </p>
+                    <p>
+                      {t("mentorship")}{" "}
+                      <span className="font-semibold text-foreground">
+                        {t("mentorRole")}
+                      </span>{" "}
+                      {t("mentorDescription")}
+                    </p>
+                    <p>{t("blogDescription")}</p>
+                    <div className="pt-4 space-y-2">
+                      <a
+                        href="mailto:princydruh@gmail.com"
+                        className="block text-sm font-medium hover:underline text-foreground"
+                      >
+                        📧 princydruh@gmail.com
+                      </a>
+                      <a
+                        href="https://www.linkedin.com/in/princy-and"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block text-sm font-medium hover:underline text-foreground"
+                      >
+                        💼 LinkedIn
+                      </a>
+                      <a
+                        href="https://portfolio-asboevkl5-prandriansprojects.vercel.app/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block text-sm font-medium hover:underline text-foreground"
+                      >
+                        🌐 Portfolio
+                      </a>
+                    </div>
+                    <p className="pt-6 text-center italic text-sm">
+                      {t("openMenu")}
+                    </p>
                   </div>
-                  <p className="pt-6 text-center italic text-sm">
-                    {t("openMenu")}
-                  </p>
                 </div>
               </div>
-            </div>
+            </ScrollArea>
           )}
         </div>
 
