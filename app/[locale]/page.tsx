@@ -31,6 +31,7 @@ import { useUrlSync } from "@/hooks/useUrlSync";
 import { useQuery } from "convex/react";
 import { ArrowLeft, HelpCircle, Keyboard, Menu } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -146,7 +147,7 @@ export default function Home() {
   });
 
   return (
-    <div className="h-screen w-full overflow-hidden">
+    <div className="flex flex-col h-screen w-full overflow-hidden">
       <div
         ref={announcementRef}
         aria-live="polite"
@@ -229,7 +230,7 @@ export default function Home() {
         </Button>
       </div>
 
-      <div className="flex items-center gap-2 border-b bg-background p-4 lg:hidden min-w-0">
+      <div className="flex-none flex items-center gap-2 border-b bg-background p-4 lg:hidden min-w-0">
         {finalNavigation.mobilePanel !== "postList" && (
           <Button
             variant="ghost"
@@ -279,7 +280,7 @@ export default function Home() {
       </div>
 
       <div
-        className={`hidden h-full lg:grid overflow-hidden ${
+        className={`hidden flex-1 lg:grid overflow-hidden ${
           finalNavigation.selectedCategory === "Home"
             ? "lg:grid-cols-[280px_1fr]"
             : "lg:grid-cols-[280px_400px_1fr]"
@@ -318,8 +319,8 @@ export default function Home() {
             }
           />
         ) : (
-          <ScrollArea className="max-h-screen h-full w-full bg-background">
-            <div className="flex min-h-screen items-center justify-center relative overflow-hidden p-8">
+          <ScrollArea className="h-full w-full bg-background [&>[data-radix-scroll-area-viewport]>div]:h-full [&>[data-radix-scroll-area-viewport]>div]:!block">
+            <div className="h-full flex flex-col items-center justify-center relative overflow-hidden p-8">
               {/* Subtle Grid Background */}
               <div
                 className="absolute inset-0 opacity-[0.15] dark:opacity-[0.08]"
@@ -359,7 +360,7 @@ export default function Home() {
         )}
       </div>
 
-      <div className="h-[calc(100vh-73px)] lg:hidden relative">
+      <div className="flex-1 lg:hidden relative">
         <div
           ref={postListPanelRef}
           className="absolute inset-0 opacity-0 pointer-events-none"
@@ -410,28 +411,14 @@ export default function Home() {
                     </p>
                     <p>{t("blogDescription")}</p>
                     <div className="pt-4 space-y-2">
-                      <a
-                        href="mailto:princydruh@gmail.com"
-                        className="block text-sm font-medium hover:underline text-foreground"
-                      >
-                        📧 princydruh@gmail.com
-                      </a>
-                      <a
+                      <Link
                         href="https://www.linkedin.com/in/princy-and"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="block text-sm font-medium hover:underline text-foreground"
                       >
                         💼 LinkedIn
-                      </a>
-                      <a
-                        href="https://portfolio-asboevkl5-prandriansprojects.vercel.app/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block text-sm font-medium hover:underline text-foreground"
-                      >
-                        🌐 Portfolio
-                      </a>
+                      </Link>
                     </div>
                     <p className="pt-6 text-center italic text-sm">
                       {t("openMenu")}
