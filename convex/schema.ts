@@ -66,6 +66,7 @@ export default defineSchema(
       name_en: v.string(),
       name_fr: v.string(),
       section: v.optional(v.string()), // Group categories into sections (e.g., "Articles", "Resources", "Efficy Labs")
+      redirectUrl: v.optional(v.string()), // Optional URL to redirect to instead of showing posts
     })
       .index("by_slug", ["slug"])
       .index("by_section", ["section"]),

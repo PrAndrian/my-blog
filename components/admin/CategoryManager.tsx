@@ -48,6 +48,7 @@ export function CategoryManager() {
     name_en: string;
     name_fr: string;
     section?: string;
+    redirectUrl?: string;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteId, setDeleteId] = useState<Id<"categories"> | null>(null);
@@ -65,6 +66,7 @@ export function CategoryManager() {
           name_en: editingCategory.name_en,
           name_fr: editingCategory.name_fr,
           section: editingCategory.section || undefined,
+          redirectUrl: editingCategory.redirectUrl || undefined,
         });
         showSuccess("Category updated successfully");
       } else {
@@ -73,6 +75,7 @@ export function CategoryManager() {
           name_en: editingCategory.name_en,
           name_fr: editingCategory.name_fr,
           section: editingCategory.section || undefined,
+          redirectUrl: editingCategory.redirectUrl || undefined,
         });
         showSuccess("Category created successfully");
       }
@@ -105,6 +108,7 @@ export function CategoryManager() {
       name_en: "",
       name_fr: "",
       section: "",
+      redirectUrl: "",
     });
     setIsDialogOpen(true);
   };
@@ -116,6 +120,7 @@ export function CategoryManager() {
       name_en: category.name_en,
       name_fr: category.name_fr,
       section: category.section || "",
+      redirectUrl: category.redirectUrl || "",
     });
     setIsDialogOpen(true);
   };
@@ -159,6 +164,7 @@ export function CategoryManager() {
                 <TableHead>English Name</TableHead>
                 <TableHead>French Name</TableHead>
                 <TableHead>Section</TableHead>
+                <TableHead>Redirect</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -182,6 +188,11 @@ export function CategoryManager() {
                     <TableCell>{category.name_fr}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {category.section || <span className="italic">None</span>}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground max-w-[150px] truncate">
+                      {category.redirectUrl || (
+                        <span className="italic">None</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
@@ -254,6 +265,23 @@ export function CategoryManager() {
               />
               <p className="text-xs text-muted-foreground">
                 Group categories into sections for better organization.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="redirectUrl">Redirect URL (Optional)</Label>
+              <Input
+                id="redirectUrl"
+                value={editingCategory?.redirectUrl || ""}
+                onChange={(e) =>
+                  setEditingCategory((prev) =>
+                    prev ? { ...prev, redirectUrl: e.target.value } : null
+                  )
+                }
+                placeholder="e.g., https://google.com"
+              />
+              <p className="text-xs text-muted-foreground">
+                If set, clicking this category will redirect to this URL instead
+                of showing posts.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4">

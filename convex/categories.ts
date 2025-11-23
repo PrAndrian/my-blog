@@ -28,6 +28,7 @@ export const create = mutation({
     name_en: v.string(),
     name_fr: v.string(),
     section: v.optional(v.string()),
+    redirectUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
@@ -44,6 +45,7 @@ export const create = mutation({
       name_en: args.name_en,
       name_fr: args.name_fr,
       section: args.section,
+      redirectUrl: args.redirectUrl,
     });
   },
 });
@@ -56,6 +58,7 @@ export const update = mutation({
     name_en: v.string(),
     name_fr: v.string(),
     section: v.optional(v.string()),
+    redirectUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
@@ -72,6 +75,7 @@ export const update = mutation({
       name_en: args.name_en,
       name_fr: args.name_fr,
       section: args.section,
+      redirectUrl: args.redirectUrl,
     });
   },
 });

@@ -110,6 +110,17 @@ export function BlogNavigationSidebar({
     }
   }, [selectedCategory]);
 
+  const handleCategoryClick = (categorySlug: string) => {
+    const category = categoriesData.find(
+      (c: Doc<"categories">) => c.slug === categorySlug
+    );
+    if (category?.redirectUrl) {
+      window.open(category.redirectUrl, "_blank");
+      return;
+    }
+    onSelectCategory(categorySlug);
+  };
+
   return (
     <SidebarProvider defaultOpen={true}>
       <Sidebar
@@ -131,26 +142,24 @@ export function BlogNavigationSidebar({
               alt={t("blogTitle")}
               width={200}
               height={80}
-              className="object-contain"
+              className="object-contain w-20 md:w-[200px] h-auto"
               priority
             />
           )}
           {!mounted && (
-            <div className="h-20 w-[200px] flex items-center justify-center">
-              <span className="text-2xl font-bold tracking-tight">
+            <div className="h-8 w-20 md:h-20 md:w-[200px] flex items-center justify-center">
+              <span className="text-lg md:text-2xl font-bold tracking-tight">
                 {t("blogTitle")}
               </span>
             </div>
           )}
         </SidebarHeader>
 
-        <SidebarSeparator />
-
         <SidebarContent className="flex-1 min-h-0">
           <ScrollArea className="h-full">
             <div className="space-y-1 px-2 py-4">
               {/* Search Bar */}
-              <div className="px-2 mb-4">
+              <div className="px-2 mb-2">
                 <Button
                   variant="outline"
                   className="w-full justify-start text-muted-foreground"
@@ -161,8 +170,7 @@ export function BlogNavigationSidebar({
                 </Button>
               </div>
 
-              <SidebarSeparator className="mb-4" />
-              {/* Home button */}
+              {/* Home button & Unsectioned Categories */}
               <SidebarGroup>
                 <SidebarGroupContent>
                   <SidebarMenu>
@@ -189,6 +197,49 @@ export function BlogNavigationSidebar({
                         <span>{tCategories("Home")}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
+
+                    {/* Unsectioned Categories */}
+                    {categoriesData
+                      .filter(
+                        (cat) => !cat.section || cat.section.trim() === ""
+                      )
+                      .map((category) => (
+                        <SidebarMenuItem key={category.slug}>
+                          <SidebarMenuButton
+                            ref={(el) => {
+                              if (el)
+                                categoryButtonsRef.current.set(
+                                  category.slug,
+                                  el
+                                );
+                            }}
+                            onClick={() => handleCategoryClick(category.slug)}
+                            isActive={selectedCategory === category.slug}
+                            tooltip={tSidebar("viewArticles", {
+                              category: getCategoryName(category.slug),
+                            })}
+                            aria-label={tSidebar("viewArticles", {
+                              category: getCategoryName(category.slug),
+                            })}
+                            aria-current={
+                              selectedCategory === category.slug
+                                ? "page"
+                                : undefined
+                            }
+                            className={cn(
+                              "w-full justify-start transition-all duration-200 !bg-transparent",
+                              selectedCategory === category.slug
+                                ? "!bg-secondary !text-secondary-foreground font-medium"
+                                : "hover:!bg-accent hover:!text-accent-foreground"
+                            )}
+                          >
+                            <span className="mr-2">
+                              {getCategoryIcon(category.slug)}
+                            </span>
+                            <span>{getCategoryName(category.slug)}</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      ))}
                   </SidebarMenu>
                 </SidebarGroupContent>
               </SidebarGroup>
@@ -200,7 +251,8 @@ export function BlogNavigationSidebar({
                 // Group categories by section
                 const grouped = categoriesData.reduce(
                   (acc, cat) => {
-                    const section = cat.section || "Other";
+                    const section = cat.section;
+                    if (!section || section.trim() === "") return acc;
                     if (!acc[section]) acc[section] = [];
                     acc[section].push(cat.slug);
                     return acc;
@@ -228,7 +280,7 @@ export function BlogNavigationSidebar({
                                         el
                                       );
                                   }}
-                                  onClick={() => onSelectCategory(category)}
+                                  onClick={() => handleCategoryClick(category)}
                                   isActive={selectedCategory === category}
                                   tooltip={tSidebar("viewArticles", {
                                     category: getCategoryName(category),

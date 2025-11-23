@@ -22,6 +22,7 @@ interface PostListProps {
   selectedPostId: Id<"posts"> | null;
   onSelectPost: (postId: Id<"posts">) => void;
   category: string;
+  hideTitle?: boolean;
 }
 
 export function PostList({
@@ -29,6 +30,7 @@ export function PostList({
   selectedPostId,
   onSelectPost,
   category,
+  hideTitle = false,
 }: PostListProps) {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const selectedPostRef = useRef<HTMLDivElement>(null);
@@ -186,9 +188,11 @@ export function PostList({
       <div className="p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            <h2 className="text-xl font-semibold">
-              {getCategoryName(category)} {t("posts")}
-            </h2>
+            {!hideTitle && (
+              <h2 className="text-xl font-semibold">
+                {getCategoryName(category)} {t("posts")}
+              </h2>
+            )}
             <p className="text-sm text-muted-foreground">
               {selectedTags.length > 0 && filteredPosts
                 ? `${filteredPosts.length} of ${posts.length}`

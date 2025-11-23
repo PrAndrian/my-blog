@@ -30,7 +30,7 @@ import { useMobilePanelAnimation } from "@/hooks/useMobilePanelAnimation";
 import { useUrlSync } from "@/hooks/useUrlSync";
 import { useQuery } from "convex/react";
 import { ArrowLeft, HelpCircle, Keyboard, Menu } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -44,6 +44,15 @@ export default function Home() {
   const tKeyboard = useTranslations("Keyboard");
   const tPostList = useTranslations("PostList");
   const tNavigation = useTranslations("Navigation");
+  const locale = useLocale();
+  const categories = useQuery(api.categories.list);
+
+  const getCategoryName = (slug: string) => {
+    if (!categories) return slug;
+    const category = categories.find((c) => c.slug === slug);
+    if (!category) return slug;
+    return locale === "fr" ? category.name_fr : category.name_en;
+  };
 
   // Read initial category and post from URL params
   const initialCategoryFromUrl = searchParams.get("category") || "Home";
@@ -247,7 +256,7 @@ export default function Home() {
             tNavigation("blogTitle")}
           {finalNavigation.mobilePanel === "postList" &&
             finalNavigation.selectedCategory !== "Home" &&
-            `${finalNavigation.selectedCategory} ${tPostList("posts")}`}
+            `${getCategoryName(finalNavigation.selectedCategory)} ${tPostList("posts")}`}
           {finalNavigation.mobilePanel === "postContent" &&
             finalNavigation.selectedPost?.title}
         </h1>
@@ -371,6 +380,7 @@ export default function Home() {
               selectedPostId={finalNavigation.selectedPostId}
               onSelectPost={finalNavigation.handleSelectPost}
               category={finalNavigation.selectedCategory}
+              hideTitle={true}
             />
           )}
         </div>
