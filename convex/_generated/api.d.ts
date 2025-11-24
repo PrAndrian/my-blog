@@ -10,6 +10,9 @@
 
 import type * as ai from "../ai.js";
 import type * as categories from "../categories.js";
+import type * as crons from "../crons.js";
+import type * as digest from "../digest.js";
+import type * as digestConfig from "../digestConfig.js";
 import type * as files from "../files.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_queries from "../lib/queries.js";
@@ -34,6 +37,9 @@ import type {
 declare const fullApi: ApiFromModules<{
   ai: typeof ai;
   categories: typeof categories;
+  crons: typeof crons;
+  digest: typeof digest;
+  digestConfig: typeof digestConfig;
   files: typeof files;
   "lib/auth": typeof lib_auth;
   "lib/queries": typeof lib_queries;
