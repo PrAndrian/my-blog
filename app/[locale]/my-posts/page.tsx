@@ -289,6 +289,7 @@ interface PostCardProps {
   post: {
     _id: Id<"posts">;
     title: string;
+    authorName?: string;
     status?: string;
     category: string;
     date: number;
@@ -317,6 +318,11 @@ function PostCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
               <h3 className="text-lg font-semibold truncate">{post.title}</h3>
+              {post.authorName && (
+                <Badge variant="outline" className="text-xs font-normal">
+                  {post.authorName}
+                </Badge>
+              )}
               <Badge variant={isDraft ? "secondary" : "default"}>
                 {isDraft ? "Draft" : "Published"}
               </Badge>

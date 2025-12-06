@@ -11,7 +11,7 @@ export const DIGEST_CONFIG = {
     endpoint: "https://newsapi.org/v2/top-headlines",
     params: {
       category: "technology",
-      language: "en",
+      country: "us", // Required: top-headlines needs country OR sources
       pageSize: 20,
     },
   },

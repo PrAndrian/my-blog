@@ -1,8 +1,51 @@
 import { v } from "convex/values";
 import OpenAI from "openai";
 import { internal } from "./_generated/api";
-import { action, internalMutation } from "./_generated/server";
+import {
+  action,
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from "./_generated/server";
 import { DIGEST_CONFIG } from "./digestConfig";
+
+// Default configuration fallback
+const DEFAULT_CONFIG = {
+  newsApiEndpoint: DIGEST_CONFIG.newsApi.endpoint,
+  newsApiParams: JSON.stringify(DIGEST_CONFIG.newsApi.params),
+  aiSystemPrompt: DIGEST_CONFIG.prompt.system,
+  scheduleDay: "Monday",
+  enabled: true,
+};
+
+// Get the current digest configuration
+export const getDigestConfig = query({
+  args: {},
+  handler: async (ctx) => {
+    const config = await ctx.db.query("digestConfig").first();
+    return config || DEFAULT_CONFIG;
+  },
+});
+
+// Save or update the digest configuration
+export const saveDigestConfig = mutation({
+  args: {
+    newsApiEndpoint: v.string(),
+    newsApiParams: v.string(),
+    aiSystemPrompt: v.string(),
+    scheduleDay: v.string(),
+    enabled: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db.query("digestConfig").first();
+    if (existing) {
+      await ctx.db.patch(existing._id, args);
+    } else {
+      await ctx.db.insert("digestConfig", args);
+    }
+  },
+});
 
 // Internal mutation to save the generated post
 export const saveDigestPost = internalMutation({
@@ -46,11 +89,55 @@ export const saveDigestPost = internalMutation({
   },
 });
 
-// Action to generate the digest
-export const generateWeeklyDigest = action({
+// Internal query to get config for action
+export const getDigestConfigInternal = internalQuery({
   args: {},
   handler: async (ctx) => {
-    console.log("Starting weekly digest generation (News API)...");
+    const config = await ctx.db.query("digestConfig").first();
+    return config || DEFAULT_CONFIG;
+  },
+});
+
+// Action to generate the digest
+export const generateWeeklyDigest = action({
+  // Add force parameter to manually trigger even if disabled or wrong day
+  args: { force: v.optional(v.boolean()) },
+  handler: async (ctx, args) => {
+    console.log("Starting digest generation process...");
+
+    // 1. Load configuration
+    const config = await ctx.runQuery(internal.digest.getDigestConfigInternal);
+
+    // 2. Check if enabled
+    if (!config.enabled && !args.force) {
+      console.log("Digest generation is disabled. Skipping.");
+      return;
+    }
+
+    // 3. Check schedule day
+    const days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const today = days[new Date().getDay()];
+
+    // Case-insensitive comparison
+    if (
+      config.scheduleDay.toLowerCase() !== today.toLowerCase() &&
+      !args.force
+    ) {
+      console.log(
+        `Today is ${today}, but schedule is for ${config.scheduleDay}. Skipping.`
+      );
+      return;
+    }
+
+    console.log("Proceeding with digest generation (News API)...");
 
     const apiKey = process.env.NEWSAPI_API_KEY;
     if (!apiKey) {
@@ -58,7 +145,7 @@ export const generateWeeklyDigest = action({
       throw new Error("NEWSAPI_API_KEY is missing");
     }
 
-    // 1. Fetch from News API
+    // 4. Fetch from News API using configured params
     interface NewsArticle {
       source: { id: string | null; name: string };
       author: string | null;
@@ -70,7 +157,14 @@ export const generateWeeklyDigest = action({
       content: string | null;
     }
 
-    const { endpoint, params } = DIGEST_CONFIG.newsApi;
+    const endpoint = config.newsApiEndpoint;
+    let params: Record<string, any>;
+    try {
+      params = JSON.parse(config.newsApiParams);
+    } catch (e) {
+      console.error("Failed to parse newsApiParams, using defaults");
+      params = DIGEST_CONFIG.newsApi.params;
+    }
 
     // Construct URL with query parameters
     const url = new URL(endpoint);
@@ -113,7 +207,7 @@ export const generateWeeklyDigest = action({
       return;
     }
 
-    // 2. Prepare prompt for OpenAI
+    // 5. Prepare prompt for OpenAI using configured prompt
     const newsContext = articles
       .map(
         (item) =>
@@ -130,7 +224,7 @@ export const generateWeeklyDigest = action({
       const completion = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
-          { role: "system", content: DIGEST_CONFIG.prompt.system },
+          { role: "system", content: config.aiSystemPrompt },
           {
             role: "user",
             content: `Voici les actualités de la semaine :\n\n${newsContext}\n\nCrée le Digest.`,
@@ -158,10 +252,10 @@ export const generateWeeklyDigest = action({
           ?.replace(/"/g, "")
           .trim() || `Digest du ${new Date().toLocaleDateString()}`;
 
-      // Create a slug
-      const slug = `digest-${new Date().toISOString().split("T")[0]}`;
+      // Create a unique slug (date + timestamp to avoid duplicates)
+      const slug = `digest-${new Date().toISOString().split("T")[0]}-${Date.now()}`;
 
-      // 3. Save to DB
+      // 6. Save to DB
       await ctx.runMutation(internal.digest.saveDigestPost, {
         title,
         content,

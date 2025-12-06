@@ -2,6 +2,7 @@
 
 import { AuthorRequestSkeleton } from "@/components/admin/AuthorRequestSkeleton";
 import { CategoryManager } from "@/components/admin/CategoryManager";
+import { DigestManager } from "@/components/admin/DigestManager";
 import { RequireAdmin } from "@/components/auth/RequireAdmin";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -128,6 +129,7 @@ function AdminContent() {
             )}
           </TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
+          <TabsTrigger value="digest">Digest</TabsTrigger>
         </TabsList>
 
         <TabsContent value="requests" className="space-y-4">
@@ -229,6 +231,10 @@ function AdminContent() {
 
         <TabsContent value="categories">
           <CategoryManager />
+        </TabsContent>
+
+        <TabsContent value="digest">
+          <DigestManager />
         </TabsContent>
       </Tabs>
 

@@ -581,6 +581,18 @@ export const getMyPosts = query({
       return [];
     }
 
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+      .unique();
+
+    // If admin, return all posts
+    if (user && user.role === "admin") {
+      const posts = await ctx.db.query("posts").order("desc").collect();
+      return posts;
+    }
+
+    // Otherwise return only user's posts
     const posts = await ctx.db
       .query("posts")
       .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
@@ -698,10 +710,11 @@ export const checkSlugAvailability = query({
   },
   returns: v.boolean(),
   handler: async (ctx, args) => {
+    // Use first() instead of unique() to handle edge case of existing duplicates
     const existingPost = await ctx.db
       .query("posts")
       .withIndex("by_slug", (q) => q.eq("slug", args.slug))
-      .unique();
+      .first();
 
     if (!existingPost) {
       return true; // Slug is available

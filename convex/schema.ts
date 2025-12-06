@@ -70,6 +70,14 @@ export default defineSchema(
     })
       .index("by_slug", ["slug"])
       .index("by_section", ["section"]),
+    // Digest configuration table
+    digestConfig: defineTable({
+      newsApiEndpoint: v.string(),
+      newsApiParams: v.string(), // Stored as JSON string
+      aiSystemPrompt: v.string(),
+      scheduleDay: v.string(), // e.g., "Monday"
+      enabled: v.boolean(),
+    }),
   },
   // If you ever get an error about schema mismatch
   // between your data and your schema, and you cannot
