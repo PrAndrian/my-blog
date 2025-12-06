@@ -7,14 +7,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { usePathname, useRouter } from "@/i18n/routing";
 import { Globe } from "lucide-react";
 import { useLocale } from "next-intl";
-import { usePathname, useRouter } from "next/navigation";
 
 const languages = [
   { code: "en", label: "English", flag: "🇬🇧" },
   { code: "fr", label: "Français", flag: "🇫🇷" },
 ] as const;
+
+type Locale = (typeof languages)[number]["code"];
 
 export function LanguageSwitcher() {
   const locale = useLocale();
@@ -23,12 +25,8 @@ export function LanguageSwitcher() {
 
   const currentLanguage = languages.find((lang) => lang.code === locale);
 
-  const handleLanguageChange = (newLocale: string) => {
-    // Get the path without the current locale
-    const pathWithoutLocale = pathname.replace(`/${locale}`, "") || "/";
-
-    // Navigate to the new locale path
-    router.push(`/${newLocale}${pathWithoutLocale}`);
+  const handleLanguageChange = (newLocale: Locale) => {
+    router.replace(pathname, { locale: newLocale });
   };
 
   return (
