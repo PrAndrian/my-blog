@@ -1,8 +1,8 @@
+import { getDefaultMetadata } from "@/lib/metadata";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
-import { getDefaultMetadata } from "@/lib/metadata";
 import "./globals.css";
-
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -21,6 +21,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} ${inter.className}`}
       >
+        <SpeedInsights />
         {children}
       </body>
     </html>
